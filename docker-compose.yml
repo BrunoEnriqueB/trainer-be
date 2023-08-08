@@ -9,6 +9,8 @@ services:
       - 9229:9229
     environment:
       NODE_ENV: 'development'
+    env_file:
+      - .env
     volumes:
       - ./node_modules:/node_modules
       - ./package.json:/package.json
