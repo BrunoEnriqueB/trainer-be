@@ -1,6 +1,21 @@
 version: '3'
 
 services:
+  trainer_db:
+    image: postgres
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - database:/etc/trainer
+    expose:
+      - 5432
+    env_file:
+      - .env
   app:
     build: .
     restart: always
@@ -16,3 +31,9 @@ services:
       - ./package.json:/package.json
       - ./tsconfig.json:/tsconfig.json
       - ./src:/usr/src/app/src
+    depends_on:
+      - trainer_db
+
+volumes:
+  database:
+    driver: local

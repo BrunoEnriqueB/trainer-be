@@ -1,0 +1,44 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("MIGRATION_DATABASE_URL")
+}
+
+model Users {
+  id       String     @id @default(uuid())
+  name     String     @db.VarChar(255)
+  document String     @db.VarChar(14)
+  email    String     @db.VarChar(100)
+  password String     @db.VarChar(100)
+  Trainers Trainers[]
+  Students Students[]
+}
+
+model Trainers {
+  id               String             @id @default(uuid())
+  userId           Users              @relation(fields: [user_id], references: [id])
+  user_id          String
+  Trainer_Students Trainer_Students[]
+}
+
+model Students {
+  id               String             @id @default(uuid())
+  userId           Users              @relation(fields: [user_id], references: [id])
+  user_id          String
+  Trainer_Students Trainer_Students[]
+}
+
+model Trainer_Students {
+  id         String   @id @default(uuid())
+  trainerId  Trainers @relation(fields: [trainer_id], references: [id])
+  studentId  Students @relation(fields: [student_id], references: [id])
+  trainer_id String
+  student_id String
+}

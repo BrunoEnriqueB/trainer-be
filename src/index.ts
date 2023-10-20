@@ -10,10 +10,12 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-app.get('/', (req: Request, res: Response) => {
-  return res.send('<h1>Hello World!</h1>');
+app.get('/', async (req: Request, res: Response) => {
+  return res.status(200).send('<h1>Hello World!</h1>');
 });
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+export default app;
