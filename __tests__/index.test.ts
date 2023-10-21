@@ -4,7 +4,7 @@ import {
   createMockContext
 } from '../src/__mocks__/context';
 import request from 'supertest';
-import app from '../src/index';
+import server from '../src/index';
 
 let mockCtx: MockContext;
 let ctx: Context;
@@ -15,7 +15,11 @@ beforeEach(() => {
 });
 
 test('should return 200', async () => {
-  await request(app).get('/').expect(200);
+  await request(server).get('/').expect(200);
+});
+
+afterEach(() => {
+  server.close();
 });
 
 afterAll((done) => {

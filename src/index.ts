@@ -14,8 +14,8 @@ app.get('/', async (req: Request, res: Response) => {
   return res.status(200).send('<h1>Hello World!</h1>');
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-export default app;
+export default server;

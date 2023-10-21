@@ -9,5 +9,5 @@ module.exports = {
   watchPathIgnorePatterns: ['/node_modules/', '/dist/'],
   testMatch: ['**/__tests__/**/*.test.ts'],
   roots: ['<rootDir>/__tests__'],
-  forceExit: true
+  detectOpenHandles: true
 };
