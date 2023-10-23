@@ -6,7 +6,8 @@ COPY package*.json ./
 
 COPY ./prisma prisma
 
-RUN npm i --silent
+RUN npm config set registry https://registry.npmjs.org/
+RUN npm i
 
 COPY . .
 
