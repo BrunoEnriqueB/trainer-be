@@ -20,7 +20,7 @@ services:
     build: .
     restart: always
     ports:
-      - 3000:3000
+      - 3000:${PORT}
       - 9229:9229
     environment:
       NODE_ENV: 'development'
