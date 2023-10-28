@@ -58,6 +58,7 @@ model Exercises {
   name              String              @db.VarChar(60)
   description       String              @db.VarChar(500)
   trainerId         Trainers            @relation(fields: [trainer_id], references: [id])
+  video_url         String              @db.VarChar(255)
   trainer_id        String
   created_at        DateTime            @default(now()) @db.Timestamptz()
   updated_at        DateTime            @default(now()) @updatedAt @db.Timestamptz()
@@ -69,6 +70,7 @@ model Workouts {
   name                 String              @db.VarChar(60)
   description          String              @db.VarChar(500)
   schedule_description String              @db.VarChar(200)
+  logo_url             String              @db.VarChar(255)
   trainerId            Trainers            @relation(fields: [trainer_id], references: [id])
   studentId            Students            @relation(fields: [student_id], references: [id])
   trainer_id           String
