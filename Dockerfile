@@ -8,6 +8,7 @@ COPY ./prisma prisma
 
 RUN npm config set registry https://registry.npmjs.org/
 RUN npm i
+RUN npx prisma generate
 
 COPY . .
 
