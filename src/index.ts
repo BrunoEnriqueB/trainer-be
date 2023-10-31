@@ -3,7 +3,9 @@ import 'express-async-errors';
 
 import express, { Request, Response } from 'express';
 import cors from 'cors';
-import errorHandler from '@/middlewares/ErrorHandler';
+import errorHandler from '@src/middlewares/ErrorHandler';
+
+import routes from './routes';
 
 const PORT = process.env.PORT || 3000;
 
@@ -15,6 +17,8 @@ app.use(cors());
 app.get('/', async (req: Request, res: Response) => {
   return res.status(200).json({ success: true });
 });
+
+app.use('/api/v1', routes);
 
 app.use(errorHandler);
 

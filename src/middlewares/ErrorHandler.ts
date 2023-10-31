@@ -1,5 +1,6 @@
-import { HttpError } from '@src/domain/HttpErrors';
 import { NextFunction, Request, Response } from 'express';
+
+import { HttpError } from '@src/domain/HttpErrors';
 
 const NODE_ENV = process.env.NODE_ENV;
 
