@@ -19,13 +19,13 @@ export class BadRequestError<T> extends HttpError<T> {
 
 export class NotFoundError<T> extends HttpError<T> {
   constructor(errors?: T[]) {
-    super(404, 'Bad Request', errors);
+    super(404, 'Not found', errors);
   }
 }
 
 export class UnauthorizedError<T> extends HttpError<T> {
   constructor(errors?: T[]) {
-    super(401, 'Bad Request', errors);
+    super(401, 'Unauthorized', errors);
   }
 }
 
