@@ -26,7 +26,7 @@ model Users {
 model Trainers {
   id               String             @id @default(uuid())
   userId           Users              @relation(fields: [user_id], references: [id])
-  user_id          String
+  user_id          String             @unique
   Trainer_Students Trainer_Students[]
   Exercises        Exercises[]
   Workouts         Workouts[]
@@ -36,7 +36,7 @@ model Trainers {
 model Students {
   id               String             @id @default(uuid())
   userId           Users              @relation(fields: [user_id], references: [id])
-  user_id          String
+  user_id          String             @unique
   Trainer_Students Trainer_Students[]
   Workouts         Workouts[]
   Workout_Tracker  Workout_Tracker[]
