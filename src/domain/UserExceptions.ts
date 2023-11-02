@@ -8,7 +8,7 @@ abstract class UserException<T> extends HttpError<T> {
 
 export class UserAlreadyExistsException<T> extends UserException<T> {
   constructor() {
-    super(401, 'User already exists');
+    super(422, 'User already exists');
   }
 }
 
