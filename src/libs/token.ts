@@ -1,9 +1,13 @@
-import jwt from 'jsonwebtoken';
+import jwt, { JsonWebTokenError } from 'jsonwebtoken';
 
 import { userData } from '@src/@types/user';
-import { UnauthorizedError } from '@src/domain/HttpErrors';
+import { HttpError, UnauthorizedError } from '@src/domain/HttpErrors';
 
 const secret = process.env.SECRET as string;
+
+type userToken = {
+  iat: number;
+} & userData;
 
 export default class Token {
   static async createToken(user: userData): Promise<string> {
@@ -15,12 +19,16 @@ export default class Token {
     return token;
   }
 
-  static async getUserInToken(token: string): Promise<userData> {
+  static async getUserInToken(token: string): Promise<userToken> {
     try {
       const user = jwt.verify(token, secret);
 
-      return user as userData;
+      return user as userToken;
     } catch (error) {
+      if (error instanceof JsonWebTokenError) {
+        throw new HttpError(401, error.message);
+      }
+
       throw new UnauthorizedError();
     }
   }
