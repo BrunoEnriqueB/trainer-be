@@ -32,4 +32,14 @@ export default class UserService {
       throw error;
     }
   }
+
+  static async userExists(
+    userUniqueKeys: UserUniqueKeysType
+  ): Promise<boolean> {
+    try {
+      return await UserRepository.userExists(userUniqueKeys);
+    } catch (error) {
+      throw error;
+    }
+  }
 }

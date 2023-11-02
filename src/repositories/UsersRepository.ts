@@ -9,9 +9,10 @@ import {
   UserAlreadyExistsException,
   UserNotFoundException
 } from '@src/domain/UserExceptions';
+import { userIndexes } from '@src/@types/user';
 
 export default class UserRepository {
-  static async getUser(userUniqueKeys: UserUniqueKeysType): Promise<Users> {
+  static getUser(userUniqueKeys: UserUniqueKeysType): Promise<Users> {
     return new Promise(async (resolve, reject): Promise<Users | void> => {
       try {
         const user = await prisma.users.findUnique({
@@ -28,7 +29,8 @@ export default class UserRepository {
       }
     });
   }
-  static async createUser(user: UserType): Promise<void> {
+
+  static createUser(user: UserType): Promise<void> {
     return new Promise(async (resolve, reject): Promise<void> => {
       try {
         const findUser = await prisma.users.findUnique({
@@ -44,6 +46,18 @@ export default class UserRepository {
         });
 
         resolve();
+      } catch (error) {
+        return reject(new InternalServerError());
+      }
+    });
+  }
+
+  static userExists(userIndexes: userIndexes): Promise<boolean> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const findUser = await prisma.users.findUnique({ where: userIndexes });
+
+        resolve(!!findUser);
       } catch (error) {
         return reject(new InternalServerError());
       }
