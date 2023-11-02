@@ -10,3 +10,14 @@ export type userData = {
   document: string;
   email: string;
 };
+
+export type userIndexes =
+  | {
+      email: string;
+    }
+  | {
+      document: string;
+    }
+  | {
+      id: string;
+    };

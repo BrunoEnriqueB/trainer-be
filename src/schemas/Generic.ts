@@ -46,4 +46,17 @@ const name = z
   .regex(/^[aA-zZ ]*$/gi)
   .max(100, { message: 'Name must have maximum of 100 characters' });
 
-export { name, email, document, password };
+const userId = z
+  .string({
+    required_error: 'Missing field: userId',
+    invalid_type_error: 'UserId must be a string'
+  })
+  .uuid({
+    message: 'userId must have an uuid pattern'
+  });
+
+const uuid = z.string().uuid();
+
+type uuidType = z.infer<typeof uuid>;
+
+export { name, email, uuid, uuidType, document, password, userId };
