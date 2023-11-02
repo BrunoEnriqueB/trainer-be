@@ -11,7 +11,7 @@ export default class UserService {
     userUniqueKeys: UserUniqueKeysType
   ): Promise<publicUser> {
     try {
-      const { id, password, ...user } = await UserRepository.getUser(
+      const { id, password, ...user } = await UserRepository.getUserAndThrow(
         userUniqueKeys
       );
 

@@ -2,7 +2,7 @@ import prisma from '@src/config/client';
 
 import { Users } from '@prisma/client';
 
-import { UserType, UserUniqueKeysType } from '@src/schemas/User';
+import { UserType } from '@src/schemas/User';
 
 import { InternalServerError } from '@src/domain/HttpErrors';
 import {
@@ -12,11 +12,11 @@ import {
 import { userIndexes } from '@src/@types/user';
 
 export default class UserRepository {
-  static getUser(userUniqueKeys: UserUniqueKeysType): Promise<Users> {
-    return new Promise(async (resolve, reject): Promise<Users | void> => {
+  static getUserAndThrow(userIndexes: userIndexes): Promise<Users> {
+    return new Promise(async (resolve, reject) => {
       try {
         const user = await prisma.users.findUnique({
-          where: userUniqueKeys
+          where: userIndexes
         });
 
         if (!user) {
@@ -30,22 +30,22 @@ export default class UserRepository {
     });
   }
 
-  static createUser(user: UserType): Promise<void> {
-    return new Promise(async (resolve, reject): Promise<void> => {
+  static createUser(user: UserType): Promise<Users> {
+    return new Promise(async (resolve, reject) => {
       try {
-        const findUser = await prisma.users.findUnique({
-          where: { email: user.email }
+        const findUser = await prisma.users.findMany({
+          where: { OR: [{ email: user.email }, { document: user.document }] }
         });
 
-        if (findUser) {
+        if (findUser.length) {
           return reject(new UserAlreadyExistsException());
         }
 
-        await prisma.users.create({
+        const newUser = await prisma.users.create({
           data: user
         });
 
-        resolve();
+        resolve(newUser);
       } catch (error) {
         return reject(new InternalServerError());
       }

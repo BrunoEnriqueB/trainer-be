@@ -6,6 +6,12 @@ abstract class TrainerException<T> extends HttpError<T> {
   }
 }
 
+export class TrainerCantAssignHimselfException<T> extends TrainerException<T> {
+  constructor() {
+    super(400, 'A trainer cannot assign himself as a student');
+  }
+}
+
 export class TrainerAlreadyExistsException<T> extends TrainerException<T> {
   constructor() {
     super(422, 'Trainer already exists');

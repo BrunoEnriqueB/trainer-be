@@ -2,11 +2,12 @@ import { NextFunction, Request, Response } from 'express';
 
 import Token from '@src/libs/token';
 
-import AuthService from '@src/services/AuthService';
+import UserService from '@src/services/UserService';
 
 import { HttpError } from '@src/domain/HttpErrors';
+import AuthService from '@src/services/AuthService';
 
-export default async function validateUser(
+export default async function validateTrainer(
   req: Request,
   res: Response,
   next: NextFunction
@@ -22,10 +23,11 @@ export default async function validateUser(
 
     const { iat, ...userData } = await Token.getUserInToken(token);
 
-    const user = await AuthService.validateUser(userData);
+    const trainer = await AuthService.validateTrainer({
+      email: userData.email
+    });
 
-    req.user = user;
-
+    req.trainer = trainer;
     next();
   } catch (error) {
     next(error);
