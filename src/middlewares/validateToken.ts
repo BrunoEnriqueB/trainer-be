@@ -20,9 +20,9 @@ export default async function validateUser(
 
     const token = authorization.split(' ')[1];
 
-    const { iat, ...userData } = await Token.getUserInToken(token);
+    const { iat, id } = await Token.getUserInToken(token);
 
-    const user = await AuthService.validateUser(userData);
+    const user = await AuthService.validateUser(id);
 
     req.user = user;
 

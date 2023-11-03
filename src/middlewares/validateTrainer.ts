@@ -21,11 +21,9 @@ export default async function validateTrainer(
 
     const token = authorization.split(' ')[1];
 
-    const { iat, ...userData } = await Token.getUserInToken(token);
+    const { iat, id } = await Token.getUserInToken(token);
 
-    const trainer = await AuthService.validateTrainer({
-      email: userData.email
-    });
+    const trainer = await AuthService.validateTrainer(id);
 
     req.trainer = trainer;
     next();

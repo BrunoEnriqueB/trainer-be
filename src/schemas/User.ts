@@ -28,18 +28,31 @@ const userSign = userUniqueKeys.and(z.object({ password }));
 
 const updateUser = user.partial();
 
+const userToken = z.object({
+  iat: z.number(),
+  id: z
+    .string({
+      required_error: 'Missing required field: id',
+      invalid_type_error: 'Id must be a string uuid'
+    })
+    .uuid()
+});
+
 type UserType = z.infer<typeof user>;
 type UserUniqueKeysType = z.infer<typeof userUniqueKeys>;
 type UserSignType = z.infer<typeof userSign>;
 type UpdateUserType = z.infer<typeof updateUser>;
+type UserTokenType = z.infer<typeof userToken>;
 
 export {
   user,
   userUniqueKeys,
   updateUser,
+  userToken,
   UserType,
   userSign,
   UserUniqueKeysType,
   UserSignType,
-  UpdateUserType
+  UpdateUserType,
+  UserTokenType
 };
