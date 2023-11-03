@@ -2,6 +2,7 @@ import prisma from '@src/config/client';
 
 import { Trainer_Students, Trainers } from '@prisma/client';
 
+import { StudentAlreadyAssignedException } from '@src/domain/StudentExceptions';
 import { InternalServerError } from '@src/domain/HttpErrors';
 import {
   TrainerAlreadyExistsException,
@@ -105,6 +106,14 @@ export default class TrainerRepository {
   ): Promise<Trainer_Students> {
     return new Promise(async (resolve, reject) => {
       try {
+        const countTrainerXStudent = await prisma.trainer_Students.count({
+          where: { trainer_id, student_id }
+        });
+
+        if (countTrainerXStudent) {
+          reject(new StudentAlreadyAssignedException());
+        }
+
         const trainerXStudent = await prisma.trainer_Students.create({
           data: { trainer_id, student_id }
         });

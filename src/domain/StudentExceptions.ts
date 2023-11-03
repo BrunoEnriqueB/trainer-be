@@ -17,3 +17,9 @@ export class StudentNotFoundException<T> extends StudentException<T> {
     super(404, 'Student not found');
   }
 }
+
+export class StudentAlreadyAssignedException<T> extends StudentException<T> {
+  constructor() {
+    super(400, 'This student is already assigned to this trainer');
+  }
+}

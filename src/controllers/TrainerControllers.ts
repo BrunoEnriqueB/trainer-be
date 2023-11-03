@@ -27,4 +27,27 @@ export default class TrainerController {
       next(error);
     }
   }
+
+  static async assignStudent(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const studentData = userUniqueKeys.parse(req.body);
+
+      const trainer = req.trainer!;
+
+      await TrainerService.assignStudent(trainer, studentData);
+
+      res.status(201).json({ success: true });
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const zodError = error as ZodError;
+
+        throw new HttpError(403, zodError.name, zodError.issues);
+      }
+      next(error);
+    }
+  }
 }

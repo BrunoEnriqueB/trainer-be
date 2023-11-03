@@ -8,5 +8,6 @@ import validateTrainer from '@src/middlewares/validateTrainer';
 const router = express.Router();
 
 router.post('/create', validateUser, TrainerController.createTrainer);
+router.post('/assign', validateTrainer, TrainerController.assignStudent);
 
 export default router;
