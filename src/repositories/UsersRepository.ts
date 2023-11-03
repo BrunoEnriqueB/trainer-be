@@ -2,14 +2,17 @@ import prisma from '@src/config/client';
 
 import { Users } from '@prisma/client';
 
-import { UserType } from '@src/schemas/User';
+import { UpdateUserType, UserType } from '@src/schemas/User';
 
 import { InternalServerError } from '@src/domain/HttpErrors';
 import {
   UserAlreadyExistsException,
-  UserNotFoundException
+  UserNotFoundException,
+  UserWithSameCredentials
 } from '@src/domain/UserExceptions';
+
 import { userIndexes } from '@src/@types/user';
+import { uuidType } from '@src/schemas/Generic';
 
 export default class UserRepository {
   static getUserAndThrow(userIndexes: userIndexes): Promise<Users> {
@@ -55,9 +58,43 @@ export default class UserRepository {
   static userExists(userIndexes: userIndexes): Promise<boolean> {
     return new Promise(async (resolve, reject) => {
       try {
-        const findUser = await prisma.users.findUnique({ where: userIndexes });
+        const query = [];
 
-        resolve(!!findUser);
+        if ('email' in userIndexes) {
+          query.push({ email: userIndexes.email });
+        }
+
+        if ('document' in userIndexes) {
+          query.push({ document: userIndexes.document });
+        }
+
+        if ('id' in userIndexes) {
+          query.push({ id: userIndexes.id });
+        }
+
+        const findUser = await prisma.users.findMany({
+          where: { OR: query }
+        });
+
+        resolve(!!findUser.length);
+      } catch (error) {
+        return reject(new InternalServerError());
+      }
+    });
+  }
+
+  static updateUser(
+    userId: uuidType,
+    userData: UpdateUserType
+  ): Promise<Users> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const user = await prisma.users.update({
+          where: { id: userId },
+          data: userData
+        });
+
+        resolve(user);
       } catch (error) {
         return reject(new InternalServerError());
       }

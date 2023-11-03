@@ -26,15 +26,20 @@ const userUniqueKeys = z
 
 const userSign = userUniqueKeys.and(z.object({ password }));
 
+const updateUser = user.partial();
+
 type UserType = z.infer<typeof user>;
 type UserUniqueKeysType = z.infer<typeof userUniqueKeys>;
 type UserSignType = z.infer<typeof userSign>;
+type UpdateUserType = z.infer<typeof updateUser>;
 
 export {
   user,
   userUniqueKeys,
+  updateUser,
   UserType,
   userSign,
   UserUniqueKeysType,
-  UserSignType
+  UserSignType,
+  UpdateUserType
 };

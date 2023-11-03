@@ -17,3 +17,9 @@ export class UserNotFoundException<T> extends UserException<T> {
     super(404, 'User not found');
   }
 }
+
+export class UserWithSameCredentials<T> extends UserException<T> {
+  constructor() {
+    super(401, 'An user with this credentials already exists');
+  }
+}
