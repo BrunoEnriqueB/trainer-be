@@ -3,23 +3,24 @@ import { NextFunction, Request, Response } from 'express';
 
 import UserService from '@src/services/UserService';
 
-import { HttpError } from '@src/domain/HttpErrors';
+import { HttpError, UnauthorizedError } from '@src/domain/HttpErrors';
 
-import { updateUser, user, userUniqueKeys } from '@schemas/User';
+import { updateUser, user } from '@schemas/User';
 import { changePassword } from '@src/schemas/User';
+import { email, userId } from '@src/schemas/Generic';
 
 export default class UserController {
-  static async findUserByEmail(
+  static async findUserById(
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<void> {
     try {
-      const uniqueKeys = userUniqueKeys.parse(req.body);
+      const id = userId.parse(req.params.id);
 
-      const user = await UserService.findUser(uniqueKeys);
+      const user = await UserService.findUserById(id);
 
-      res.status(201).json({ success: true, user });
+      res.status(200).json({ success: true, user });
     } catch (error) {
       if (error instanceof ZodError) {
         const zodError = error as ZodError;
@@ -80,9 +81,14 @@ export default class UserController {
     next: NextFunction
   ): Promise<void> {
     try {
+      const userEmail = email.parse(req.params.email);
       const passwords = changePassword.parse(req.body);
 
       const user = req.user!;
+
+      if (user.email !== userEmail) {
+        throw new UnauthorizedError();
+      }
 
       await UserService.changePassword(
         user.id,

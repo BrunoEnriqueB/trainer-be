@@ -4,25 +4,24 @@ import { publicUser, userIndexes } from '@src/@types/user';
 
 import { hashPassword, verifyPassword } from '@src/utils/hashPassword';
 
+import { Users } from '@prisma/client';
+
 import {
   UpdateUserType,
   UserType,
-  UserUniqueKeysType,
-  user
+  UserUniqueKeysType
 } from '@src/schemas/User';
 import { uuidType } from '@src/schemas/Generic';
-import { Users } from '@prisma/client';
+
 import { UserWithSameCredentials } from '@src/domain/UserExceptions';
 import { HttpError } from '@src/domain/HttpErrors';
 
 export default class UserService {
-  static async findUser(
-    userUniqueKeys: UserUniqueKeysType
-  ): Promise<publicUser> {
+  static async findUserById(userId: uuidType): Promise<publicUser> {
     try {
-      const { id, password, ...user } = await UserRepository.getUserAndThrow(
-        userUniqueKeys
-      );
+      const { password, ...user } = await UserRepository.getUserAndThrow({
+        id: userId
+      });
 
       return user;
     } catch (error) {

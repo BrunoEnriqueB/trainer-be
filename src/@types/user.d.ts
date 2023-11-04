@@ -1,4 +1,5 @@
 export type publicUser = {
+  id: string;
   name: string;
   document: string;
   email: string;
