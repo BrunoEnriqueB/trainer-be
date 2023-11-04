@@ -2,7 +2,7 @@ import UserRepository from '@src/repositories/UsersRepository';
 
 import { publicUser, userIndexes } from '@src/@types/user';
 
-import { hashPassword } from '@src/utils/hashPassword';
+import { hashPassword, verifyPassword } from '@src/utils/hashPassword';
 
 import {
   UpdateUserType,
@@ -13,6 +13,7 @@ import {
 import { uuidType } from '@src/schemas/Generic';
 import { Users } from '@prisma/client';
 import { UserWithSameCredentials } from '@src/domain/UserExceptions';
+import { HttpError } from '@src/domain/HttpErrors';
 
 export default class UserService {
   static async findUser(
@@ -76,6 +77,31 @@ export default class UserService {
       }
 
       await UserRepository.updateUser(userId, userData);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async changePassword(
+    userId: uuidType,
+    actualPassword: string,
+    newPassword: string
+  ) {
+    try {
+      const findUser = await UserRepository.getUserAndThrow({ id: userId });
+
+      const isPasswordsValid = await verifyPassword(
+        actualPassword,
+        findUser.password
+      );
+
+      if (!isPasswordsValid) {
+        throw new HttpError(401, 'Provided password is wrong');
+      }
+
+      const hashedPassword = await hashPassword(newPassword);
+
+      await UserRepository.changePassword(findUser.id, hashedPassword);
     } catch (error) {
       throw error;
     }

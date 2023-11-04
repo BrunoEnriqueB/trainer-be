@@ -44,6 +44,11 @@ const userToken = z.object({
     .uuid()
 });
 
+const changePassword = z.object({
+  actualPassword: password,
+  newPassword: password
+});
+
 type UserType = z.infer<typeof user>;
 type UserUniqueKeysType = z.infer<typeof userUniqueKeys>;
 type UserSignType = z.infer<typeof userSign>;
@@ -55,6 +60,7 @@ export {
   userUniqueKeys,
   updateUser,
   userToken,
+  changePassword,
   UserType,
   userSign,
   UserUniqueKeysType,
