@@ -26,7 +26,13 @@ const userUniqueKeys = z
 
 const userSign = userUniqueKeys.and(z.object({ password }));
 
-const updateUser = user.partial();
+const updateUser = z
+  .object({
+    name,
+    email,
+    document
+  })
+  .partial();
 
 const userToken = z.object({
   iat: z.number(),
