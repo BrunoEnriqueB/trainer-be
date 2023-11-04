@@ -58,9 +58,14 @@ export default class UserController {
     next: NextFunction
   ): Promise<void> {
     try {
+      const userEmail = email.parse(req.params.email);
       const userBody = updateUser.parse(req.body);
 
       const user = req.user!;
+
+      if (user.email !== userEmail) {
+        throw new UnauthorizedError();
+      }
 
       await UserService.updateUser(user.id, userBody);
 
