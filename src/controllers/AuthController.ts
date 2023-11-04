@@ -3,7 +3,7 @@ import { NextFunction, Request, Response } from 'express';
 
 import { HttpError } from '@src/domain/HttpErrors';
 
-import { user, userSign } from '@schemas/User';
+import { user, userSign, userUniqueKeys } from '@schemas/User';
 
 import AuthService from '@src/services/AuthService';
 import UserService from '@src/services/UserService';
@@ -41,6 +41,27 @@ export default class AuthController {
       const token = await AuthService.authUser(sign);
 
       res.status(200).json({ success: true, token });
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const zodError = error as ZodError;
+
+        throw new HttpError(403, zodError.name, zodError.issues);
+      }
+      next(error);
+    }
+  }
+
+  static async recoveryPassword(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const userData = userUniqueKeys.parse(req.body);
+
+      await AuthService.recoveryUserPassword(userData);
+
+      res.status(200).json({ success: true });
     } catch (error) {
       if (error instanceof ZodError) {
         const zodError = error as ZodError;

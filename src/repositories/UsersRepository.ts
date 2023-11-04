@@ -7,8 +7,7 @@ import { UpdateUserType, UserType } from '@src/schemas/User';
 import { InternalServerError } from '@src/domain/HttpErrors';
 import {
   UserAlreadyExistsException,
-  UserNotFoundException,
-  UserWithSameCredentials
+  UserNotFoundException
 } from '@src/domain/UserExceptions';
 
 import { userIndexes } from '@src/@types/user';
@@ -95,6 +94,18 @@ export default class UserRepository {
         });
 
         resolve(user);
+      } catch (error) {
+        return reject(new InternalServerError());
+      }
+    });
+  }
+
+  static changePassword(id: uuidType, password: string): Promise<void> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        await prisma.users.update({ where: { id }, data: { password } });
+
+        resolve();
       } catch (error) {
         return reject(new InternalServerError());
       }

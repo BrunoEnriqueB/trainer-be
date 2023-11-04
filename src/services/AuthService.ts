@@ -7,11 +7,14 @@ import TrainerRepository from '@src/repositories/TrainerRepository';
 
 import { UserSignType, UserUniqueKeysType } from '@src/schemas/User';
 
-import { verifyPassword } from '@src/utils/hashPassword';
+import { hashPassword, verifyPassword } from '@src/utils/hashPassword';
 
 import { UserNotFoundException } from '@src/domain/UserExceptions';
 import { UserMustBeATrainer } from '@src/domain/AuthExceptions';
 import { uuidType } from '@src/schemas/Generic';
+import generatePassword from '@src/utils/generatePassword';
+import sendEmail from '@src/utils/sendEmail';
+import { RecoveryPasswordTemplate } from '@src/domain/EmailConstructor';
 
 export default class AuthService {
   static async authUser(user: UserSignType): Promise<string> {
@@ -55,6 +58,24 @@ export default class AuthService {
       }
 
       return trainerFind;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async recoveryUserPassword(user: UserUniqueKeysType) {
+    try {
+      const findUser = await UserRepository.getUserAndThrow(user);
+
+      const generatedPassword = generatePassword();
+
+      const newUserPassword = await hashPassword(generatedPassword);
+
+      await UserRepository.changePassword(findUser.id, newUserPassword);
+
+      await sendEmail(
+        new RecoveryPasswordTemplate([findUser.email], generatedPassword)
+      );
     } catch (error) {
       throw error;
     }
