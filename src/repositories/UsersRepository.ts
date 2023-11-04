@@ -14,6 +14,20 @@ import { userIndexes } from '@src/@types/user';
 import { uuidType } from '@src/schemas/Generic';
 
 export default class UserRepository {
+  static getUser(userIndexes: userIndexes): Promise<Users | null> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const user = await prisma.users.findUnique({
+          where: userIndexes
+        });
+
+        resolve(user);
+      } catch (error) {
+        return reject(new InternalServerError());
+      }
+    });
+  }
+
   static getUserAndThrow(userIndexes: userIndexes): Promise<Users> {
     return new Promise(async (resolve, reject) => {
       try {

@@ -6,6 +6,12 @@ abstract class AuthException<T> extends HttpError<T> {
   }
 }
 
+export class TokenNotAuthorized<T> extends AuthException<T> {
+  constructor() {
+    super(401, 'Invalid token, not autorized to complete this action');
+  }
+}
+
 export class UserMustBeATrainer<T> extends AuthException<T> {
   constructor() {
     super(401, 'User must be a trainer to complete this action');

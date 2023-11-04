@@ -10,7 +10,10 @@ import { UserSignType, UserUniqueKeysType } from '@src/schemas/User';
 import { hashPassword, verifyPassword } from '@src/utils/hashPassword';
 
 import { UserNotFoundException } from '@src/domain/UserExceptions';
-import { UserMustBeATrainer } from '@src/domain/AuthExceptions';
+import {
+  TokenNotAuthorized,
+  UserMustBeATrainer
+} from '@src/domain/AuthExceptions';
 import { uuidType } from '@src/schemas/Generic';
 import generatePassword from '@src/utils/generatePassword';
 import sendEmail from '@src/utils/sendEmail';
@@ -39,7 +42,11 @@ export default class AuthService {
 
   static async validateUser(userId: uuidType): Promise<Users> {
     try {
-      const user = await UserRepository.getUserAndThrow({ id: userId });
+      const user = await UserRepository.getUser({ id: userId });
+
+      if (!user) {
+        throw new TokenNotAuthorized();
+      }
 
       return user;
     } catch (error) {
