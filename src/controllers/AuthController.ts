@@ -3,7 +3,7 @@ import { NextFunction, Request, Response } from 'express';
 
 import { HttpError } from '@src/domain/HttpErrors';
 
-import { user, userSign, userUniqueKeys } from '@schemas/User';
+import { user, userSign, userUniqueKeysPartial } from '@schemas/User';
 
 import AuthService from '@src/services/AuthService';
 import UserService from '@src/services/UserService';
@@ -57,7 +57,7 @@ export default class AuthController {
     next: NextFunction
   ) {
     try {
-      const userData = userUniqueKeys.parse(req.body);
+      const userData = userUniqueKeysPartial.parse(req.body);
 
       await AuthService.recoveryUserPassword(userData);
 

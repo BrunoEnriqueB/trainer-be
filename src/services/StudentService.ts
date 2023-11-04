@@ -4,10 +4,12 @@ import UserRepository from '@src/repositories/UsersRepository';
 import TrainerRepository from '@src/repositories/TrainerRepository';
 import StudentRepository from '@src/repositories/StudentRepository';
 
-import { UserUniqueKeysType } from '@src/schemas/User';
+import { UserUniqueKeysPartialType } from '@src/schemas/User';
 
 export default class StudentService {
-  static async insertStudent(trainer: UserUniqueKeysType): Promise<void> {
+  static async insertStudent(
+    trainer: UserUniqueKeysPartialType
+  ): Promise<void> {
     try {
       const findUser = await UserRepository.getUserAndThrow(trainer);
 

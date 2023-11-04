@@ -10,11 +10,11 @@ import {
 } from '@src/domain/StudentExceptions';
 
 import { uuidType } from '@src/schemas/Generic';
-import { UserUniqueKeysType } from '@src/schemas/User';
+import { UserUniqueKeysPartialType } from '@src/schemas/User';
 
 export default class StudentRepository {
   static getStudentByUserAndThrow(
-    userUniqueKeys: UserUniqueKeysType
+    userUniqueKeys: UserUniqueKeysPartialType
   ): Promise<Students> {
     return new Promise(async (resolve, reject) => {
       try {

@@ -7,13 +7,25 @@ import { hashPassword, verifyPassword } from '@src/utils/hashPassword';
 import {
   UpdateUserType,
   UserType,
-  UserUniqueKeysType
+  UserUniqueKeysPartialType
 } from '@src/schemas/User';
 import { uuidType } from '@src/schemas/Generic';
 
 import { HttpError } from '@src/domain/HttpErrors';
 
 export default class UserService {
+  static async findUserByEmail(email: string): Promise<publicUser> {
+    try {
+      const { password, ...user } = await UserRepository.getUserAndThrow({
+        email
+      });
+
+      return user;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   static async findUserById(userId: uuidType): Promise<publicUser> {
     try {
       const { password, ...user } = await UserRepository.getUserAndThrow({
@@ -39,7 +51,7 @@ export default class UserService {
   }
 
   static async userExists(
-    userUniqueKeys: UserUniqueKeysType
+    userUniqueKeys: UserUniqueKeysPartialType
   ): Promise<boolean> {
     try {
       return await UserRepository.userExists(userUniqueKeys);

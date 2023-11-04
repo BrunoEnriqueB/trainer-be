@@ -11,7 +11,7 @@ const router = Router();
 
 router.use('/auth', AuthRoutes);
 router.use('/student', StudentRoutes);
-router.use('/trainer', TrainerRoutes);
+router.use('/trainers', validateUser, TrainerRoutes);
 router.use('/users', validateUser, UserRoutes);
 
 export default router;

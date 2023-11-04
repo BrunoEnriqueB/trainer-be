@@ -5,7 +5,7 @@ import { Trainers, Users } from '@prisma/client';
 import UserRepository from '@src/repositories/UsersRepository';
 import TrainerRepository from '@src/repositories/TrainerRepository';
 
-import { UserSignType, UserUniqueKeysType } from '@src/schemas/User';
+import { UserSignType, UserUniqueKeysPartialType } from '@src/schemas/User';
 
 import { hashPassword, verifyPassword } from '@src/utils/hashPassword';
 
@@ -70,7 +70,7 @@ export default class AuthService {
     }
   }
 
-  static async recoveryUserPassword(user: UserUniqueKeysType) {
+  static async recoveryUserPassword(user: UserUniqueKeysPartialType) {
     try {
       const findUser = await UserRepository.getUserAndThrow(user);
 

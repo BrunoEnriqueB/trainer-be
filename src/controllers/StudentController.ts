@@ -3,7 +3,7 @@ import { ZodError } from 'zod';
 
 import { HttpError } from '@src/domain/HttpErrors';
 
-import { userUniqueKeys } from '@src/schemas/User';
+import { userUniqueKeysPartial } from '@src/schemas/User';
 import StudentService from '@src/services/StudentService';
 
 export default class StudentController {
@@ -13,7 +13,7 @@ export default class StudentController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const studentData = userUniqueKeys.parse(req.body);
+      const studentData = userUniqueKeysPartial.parse(req.body);
       await StudentService.insertStudent(studentData);
 
       res.status(201).json({ success: true });

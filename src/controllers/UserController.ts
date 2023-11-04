@@ -10,6 +10,27 @@ import { changePassword } from '@src/schemas/User';
 import { email, userId } from '@src/schemas/Generic';
 
 export default class UserController {
+  static async findUser(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const emailData = email.parse(req.params.email);
+
+      const user = await UserService.findUserByEmail(emailData);
+
+      res.status(200).json({ success: true, user });
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const zodError = error as ZodError;
+
+        throw new HttpError(403, zodError.name, zodError.issues);
+      }
+      next(error);
+    }
+  }
+
   static async findUserById(
     req: Request,
     res: Response,

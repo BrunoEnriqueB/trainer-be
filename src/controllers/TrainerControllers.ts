@@ -1,11 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
 import { ZodError } from 'zod';
 
-import { HttpError } from '@src/domain/HttpErrors';
+import { HttpError, UnauthorizedError } from '@src/domain/HttpErrors';
 
-import { userUniqueKeys } from '@src/schemas/User';
+import { UserUniqueKeysType, userUniqueKeysPartial } from '@src/schemas/User';
 import TrainerService from '@src/services/TrainerService';
-
 export default class TrainerController {
   static async createTrainer(
     req: Request,
@@ -13,7 +12,18 @@ export default class TrainerController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const trainerData = userUniqueKeys.parse(req.body);
+      const user = req.user!;
+      const trainerData = userUniqueKeysPartial.parse(req.body);
+
+      const userUniqueKeys = trainerData as UserUniqueKeysType;
+
+      if (
+        (userUniqueKeys.document &&
+          userUniqueKeys.document !== user.document) ||
+        (userUniqueKeys.email && userUniqueKeys.email !== user.email)
+      ) {
+        throw new UnauthorizedError();
+      }
 
       await TrainerService.insertTrainer(trainerData);
 
@@ -34,7 +44,7 @@ export default class TrainerController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const studentData = userUniqueKeys.parse(req.body);
+      const studentData = userUniqueKeysPartial.parse(req.body);
 
       const trainer = req.trainer!;
 

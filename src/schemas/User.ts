@@ -8,7 +8,12 @@ const user = z.object({
   password
 });
 
-const userUniqueKeys = z
+const userUniqueKeys = z.object({
+  email,
+  document
+});
+
+const userUniqueKeysPartial = z
   .object({
     email,
     document
@@ -24,7 +29,7 @@ const userUniqueKeys = z
     })
   );
 
-const userSign = userUniqueKeys.and(z.object({ password }));
+const userSign = userUniqueKeysPartial.and(z.object({ password }));
 
 const updateUser = z
   .object({
@@ -50,6 +55,7 @@ const changePassword = z.object({
 });
 
 type UserType = z.infer<typeof user>;
+type UserUniqueKeysPartialType = z.infer<typeof userUniqueKeysPartial>;
 type UserUniqueKeysType = z.infer<typeof userUniqueKeys>;
 type UserSignType = z.infer<typeof userSign>;
 type UpdateUserType = z.infer<typeof updateUser>;
@@ -57,14 +63,16 @@ type UserTokenType = z.infer<typeof userToken>;
 
 export {
   user,
-  userUniqueKeys,
+  userUniqueKeysPartial,
   updateUser,
   userToken,
   changePassword,
+  userUniqueKeys,
   UserType,
   userSign,
-  UserUniqueKeysType,
+  UserUniqueKeysPartialType,
   UserSignType,
   UpdateUserType,
-  UserTokenType
+  UserTokenType,
+  UserUniqueKeysType
 };

@@ -10,12 +10,12 @@ import {
 } from '@src/domain/TrainerExceptions';
 
 import { uuidType } from '@src/schemas/Generic';
-import { UserUniqueKeysType } from '@src/schemas/User';
+import { UserUniqueKeysPartialType } from '@src/schemas/User';
 import { UserNotFoundException } from '@src/domain/UserExceptions';
 
 export default class TrainerRepository {
   static getTrainerByUserAndThrow(
-    userUniqueKeys: UserUniqueKeysType
+    userUniqueKeys: UserUniqueKeysPartialType
   ): Promise<Trainers> {
     return new Promise(async (resolve, reject) => {
       try {
@@ -43,7 +43,7 @@ export default class TrainerRepository {
   }
 
   static getTrainerByUser(
-    userUniqueKeys: UserUniqueKeysType
+    userUniqueKeys: UserUniqueKeysPartialType
   ): Promise<Trainers | null> {
     return new Promise(async (resolve, reject) => {
       try {
