@@ -1,17 +1,19 @@
 import prisma from '@src/config/client';
 
 import { Users } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 import { UpdateUserType, UserType } from '@src/schemas/User';
 
 import { InternalServerError } from '@src/domain/HttpErrors';
 import {
   UserAlreadyExistsException,
-  UserNotFoundException
+  UserNotFoundException,
+  UserWithSameCredentials
 } from '@src/domain/UserExceptions';
 
-import { userIndexes } from '@src/@types/user';
 import { uuidType } from '@src/schemas/Generic';
+import { userIndexes } from '@src/@types/user';
 
 export default class UserRepository {
   static getUser(userIndexes: userIndexes): Promise<Users | null> {
@@ -109,6 +111,14 @@ export default class UserRepository {
 
         resolve(user);
       } catch (error) {
+        if (error instanceof PrismaClientKnownRequestError) {
+          const prismaError = error as PrismaClientKnownRequestError;
+
+          if (prismaError.code === 'P2002') {
+            return reject(new UserWithSameCredentials());
+          }
+        }
+
         return reject(new InternalServerError());
       }
     });
