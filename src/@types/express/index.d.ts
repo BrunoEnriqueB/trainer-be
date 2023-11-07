@@ -13,12 +13,12 @@ declare global {
       };
 
       trainer?: {
-        id: string;
+        trainer_id: string;
         user_id: string;
       };
 
       student?: {
-        id: string;
+        student_id: string;
         user_id: string;
       };
     }
