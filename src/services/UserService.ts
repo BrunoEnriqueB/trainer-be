@@ -1,6 +1,6 @@
 import UserRepository from '@src/repositories/UsersRepository';
 
-import { publicUser } from '@src/@types/user';
+import { publicUser, publicUserAndForeigns } from '@src/@types/user';
 
 import { hashPassword, verifyPassword } from '@src/utils/hashPassword';
 
@@ -26,7 +26,7 @@ export default class UserService {
     }
   }
 
-  static async findUserById(userId: uuidType): Promise<publicUser> {
+  static async findUserById(userId: uuidType): Promise<publicUserAndForeigns> {
     try {
       const { password, ...user } = await UserRepository.getUserAndThrow({
         id: userId

@@ -1,6 +1,6 @@
 import prisma from '@src/config/client';
 
-import { Trainer_Students, Trainers } from '@prisma/client';
+import { Trainer_Students, Trainers, Users } from '@prisma/client';
 
 import { StudentAlreadyAssignedException } from '@src/domain/StudentExceptions';
 import { InternalServerError } from '@src/domain/HttpErrors';
@@ -12,30 +12,32 @@ import {
 import { uuidType } from '@src/schemas/Generic';
 import { UserUniqueKeysPartialType } from '@src/schemas/User';
 import { UserNotFoundException } from '@src/domain/UserExceptions';
+import { TrainerUniqueKeysType } from '@src/schemas/Trainer';
 
 export default class TrainerRepository {
-  static getTrainerByUserAndThrow(
-    userUniqueKeys: UserUniqueKeysPartialType
-  ): Promise<Trainers> {
+  static getTrainerByUserOrThrow(
+    userUniqueKeys: TrainerUniqueKeysType
+  ): Promise<Users & Trainers> {
     return new Promise(async (resolve, reject) => {
       try {
         const user = await prisma.users.findUnique({
-          where: userUniqueKeys
+          where: userUniqueKeys,
+          include: {
+            Trainers: true
+          }
         });
 
         if (!user) {
           return reject(new UserNotFoundException());
         }
 
-        const trainer = await prisma.trainers.findUnique({
-          where: { user_id: user.id }
-        });
-
-        if (!trainer) {
+        if (!user.Trainers) {
           return reject(new TrainerNotFoundException());
         }
 
-        resolve(trainer);
+        let { Trainers, ...restUser } = user;
+
+        resolve({ ...restUser, ...Trainers });
       } catch (error) {
         return reject(new InternalServerError());
       }
@@ -66,11 +68,11 @@ export default class TrainerRepository {
     });
   }
 
-  static trainerExists(id: uuidType): Promise<boolean> {
+  static trainerExists(trainer_id: uuidType): Promise<boolean> {
     return new Promise(async (resolve, reject) => {
       try {
         const trainer = await prisma.trainers.findUnique({
-          where: { id }
+          where: { trainer_id }
         });
 
         resolve(!!trainer);

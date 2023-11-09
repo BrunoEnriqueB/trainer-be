@@ -1,6 +1,6 @@
 import prisma from '@src/config/client';
 
-import { Users } from '@prisma/client';
+import { Students, Trainers, Users } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 import { UpdateUserType, UserType } from '@src/schemas/User';
@@ -13,14 +13,22 @@ import {
 } from '@src/domain/UserExceptions';
 
 import { uuidType } from '@src/schemas/Generic';
-import { userIndexes } from '@src/@types/user';
+import { TrainerAndStudentsNull, userIndexes } from '@src/@types/user';
 
 export default class UserRepository {
-  static getUser(userIndexes: userIndexes): Promise<Users | null> {
+  static getUserAndForeignKeys(
+    userIndexes: userIndexes
+  ): Promise<
+    (Users & { Trainers: Trainers | null; Students: Students | null }) | null
+  > {
     return new Promise(async (resolve, reject) => {
       try {
         const user = await prisma.users.findUnique({
-          where: userIndexes
+          where: userIndexes,
+          include: {
+            Students: true,
+            Trainers: true
+          }
         });
 
         resolve(user);
@@ -30,11 +38,17 @@ export default class UserRepository {
     });
   }
 
-  static getUserAndThrow(userIndexes: userIndexes): Promise<Users> {
+  static getUserAndThrow(
+    userIndexes: userIndexes
+  ): Promise<Users & TrainerAndStudentsNull> {
     return new Promise(async (resolve, reject) => {
       try {
         const user = await prisma.users.findUnique({
-          where: userIndexes
+          where: userIndexes,
+          include: {
+            Students: true,
+            Trainers: true
+          }
         });
 
         if (!user) {

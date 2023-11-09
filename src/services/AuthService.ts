@@ -42,7 +42,7 @@ export default class AuthService {
 
   static async validateUser(userId: uuidType): Promise<Users> {
     try {
-      const user = await UserRepository.getUser({ id: userId });
+      const user = await UserRepository.getUserAndForeignKeys({ id: userId });
 
       if (!user) {
         throw new TokenNotAuthorized();
@@ -56,15 +56,17 @@ export default class AuthService {
 
   static async validateTrainer(userId: uuidType): Promise<Trainers> {
     try {
-      const user = await UserRepository.getUserAndThrow({ id: userId });
+      const user = await UserRepository.getUserAndForeignKeys({ id: userId });
 
-      const trainerFind = await TrainerRepository.getTrainerByUser(user);
+      if (!user) {
+        throw new TokenNotAuthorized();
+      }
 
-      if (!trainerFind) {
+      if (!user.Trainers) {
         throw new UserMustBeATrainer();
       }
 
-      return trainerFind;
+      return user.Trainers;
     } catch (error) {
       throw error;
     }

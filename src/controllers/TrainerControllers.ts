@@ -4,8 +4,51 @@ import { ZodError } from 'zod';
 import { HttpError, UnauthorizedError } from '@src/domain/HttpErrors';
 
 import { UserUniqueKeysType, userUniqueKeysPartial } from '@src/schemas/User';
+
 import TrainerService from '@src/services/TrainerService';
+
+import { email, userId } from '@src/schemas/Generic';
+import { trainerUniqueKeys } from '@src/schemas/Trainer';
+
 export default class TrainerController {
+  static async findTrainerById(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const id = userId.parse(req.params.id);
+
+      const trainer = await TrainerService.getTrainer({ id });
+
+      res.status(200).json({ success: true, trainer });
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const zodError = error as ZodError;
+
+        throw new HttpError(403, zodError.name, zodError.issues);
+      }
+      next(error);
+    }
+  }
+
+  static async findTrainer(req: Request, res: Response, next: NextFunction) {
+    try {
+      const trainerKeys = trainerUniqueKeys.parse(req.query);
+
+      const trainer = await TrainerService.getTrainer(trainerKeys);
+
+      res.status(200).json({ success: true, trainer });
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const zodError = error as ZodError;
+
+        throw new HttpError(403, zodError.name, zodError.issues);
+      }
+      next(error);
+    }
+  }
+
   static async createTrainer(
     req: Request,
     res: Response,

@@ -48,11 +48,11 @@ const name = z
 
 const userId = z
   .string({
-    required_error: 'Missing field: userId',
-    invalid_type_error: 'UserId must be a string'
+    required_error: 'Missing field: id',
+    invalid_type_error: 'id must be a string'
   })
   .uuid({
-    message: 'userId must have an uuid pattern'
+    message: 'Id must have an uuid pattern'
   });
 
 const uuid = z.string().uuid();
