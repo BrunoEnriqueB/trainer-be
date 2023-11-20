@@ -2,8 +2,6 @@ import { NextFunction, Request, Response } from 'express';
 
 import Token from '@src/libs/token';
 
-import UserService from '@src/services/UserService';
-
 import { HttpError } from '@src/domain/HttpErrors';
 import AuthService from '@src/services/AuthService';
 

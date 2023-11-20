@@ -1,4 +1,7 @@
+import { File } from 'buffer';
 import { z } from 'zod';
+
+const ACCEPTED_MIME_TYPES = ['image/jpeg', 'image/png', 'video/mp4'];
 
 const email = z
   .string({
@@ -44,7 +47,36 @@ const name = z
   })
   .trim()
   .regex(/^[aA-zZ ]*$/gi)
-  .max(100, { message: 'Name must have maximum of 100 characters' });
+  .max(100, { message: 'Name must have a maximum of 100 characters' });
+
+const description = z
+  .string({
+    required_error: 'Missing field: description',
+    invalid_type_error: 'Description must be a string'
+  })
+  .trim()
+  .max(500, { message: 'Description must have a maximum of 500 characters' });
+
+const video = z
+  .custom<Express.Multer.File>()
+  .superRefine((file: Express.Multer.File, ctx: z.RefinementCtx) => {
+    if (!file) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Missing field: file'
+      });
+      return;
+    }
+
+    if (!ACCEPTED_MIME_TYPES.includes(file.mimetype)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `File must be one of [${ACCEPTED_MIME_TYPES.join(
+          ', '
+        )}] but was ${file.mimetype}`
+      });
+    }
+  });
 
 const userId = z
   .string({
@@ -59,4 +91,14 @@ const uuid = z.string().uuid();
 
 type uuidType = z.infer<typeof uuid>;
 
-export { name, email, uuid, uuidType, document, password, userId };
+export {
+  name,
+  email,
+  description,
+  uuid,
+  video,
+  uuidType,
+  document,
+  password,
+  userId
+};
