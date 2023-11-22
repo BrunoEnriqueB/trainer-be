@@ -4,7 +4,10 @@ import StudentRepository from '@src/repositories/StudentRepository';
 
 import { Trainers } from '@prisma/client';
 
-import { TrainerNotFoundException } from '@src/domain/TrainerExceptions';
+import {
+  TrainerCantAssignHimselfException,
+  TrainerNotFoundException
+} from '@src/domain/TrainerExceptions';
 
 import { uuidType } from '@src/schemas/Generic';
 import { TrainerUniqueKeysType } from '@src/schemas/Trainer';
@@ -54,6 +57,10 @@ export default class TrainerService {
       const findStudent = await StudentRepository.getStudentByUserAndThrow(
         student
       );
+
+      if (findStudent.user_id === trainer.user_id) {
+        throw new TrainerCantAssignHimselfException();
+      }
 
       await TrainerRepository.assignStudent(
         trainer.trainer_id,
