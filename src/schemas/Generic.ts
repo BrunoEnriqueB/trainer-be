@@ -87,6 +87,29 @@ const userId = z
     message: 'Id must have an uuid pattern'
   });
 
+const id = z
+  .union([
+    z.number({
+      required_error: 'Missing field: id'
+    }),
+    z.string({
+      required_error: 'Missing field: id'
+    })
+  ])
+  .refine(
+    (val) => {
+      return !isNaN(Number(val));
+    },
+    { message: 'Id must be a number' }
+  )
+  .transform((val) => Number(val))
+  .refine(
+    (val) => {
+      return val > 0;
+    },
+    { message: 'Id must be a positive number' }
+  );
+
 const uuid = z.string().uuid();
 
 type uuidType = z.infer<typeof uuid>;
@@ -97,6 +120,7 @@ export {
   description,
   uuid,
   video,
+  id,
   uuidType,
   document,
   password,

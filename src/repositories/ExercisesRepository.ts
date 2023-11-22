@@ -1,7 +1,7 @@
 import prisma from '@src/config/client';
 import { Exercises } from '@prisma/client';
 
-import { NewExerciseType } from '@src/schemas/Exercise';
+import { ExercisesFilterType, NewExerciseType } from '@src/schemas/Exercise';
 import { uuidType } from '@src/schemas/Generic';
 
 import { ExerciseAlreadyExistsException } from '@src/domain/ExerciseExceptions';
@@ -34,5 +34,21 @@ export default class ExercisesRepository {
         return reject(new InternalServerError());
       }
     });
+  }
+
+  static async list(filters: ExercisesFilterType): Promise<Exercises[]> {
+    {
+      return new Promise(async (resolve, reject) => {
+        try {
+          const exercises = await prisma.exercises.findMany({
+            where: filters
+          });
+
+          resolve(exercises);
+        } catch (error) {
+          return reject(new InternalServerError());
+        }
+      });
+    }
   }
 }
