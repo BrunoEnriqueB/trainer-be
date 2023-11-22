@@ -3,12 +3,11 @@ import { ZodError } from 'zod';
 
 import { HttpError, UnauthorizedError } from '@src/domain/HttpErrors';
 
-import { UserUniqueKeysType, userUniqueKeysPartial } from '@src/schemas/User';
-
 import TrainerService from '@src/services/TrainerService';
 
-import { email, userId } from '@src/schemas/Generic';
-import { trainerUniqueKeys } from '@src/schemas/Trainer';
+import { userId } from '@src/schemas/Generic';
+import { trainerId, trainerUniqueKeys } from '@src/schemas/Trainer';
+import { UserUniqueKeysType, userUniqueKeysPartial } from '@src/schemas/User';
 
 export default class TrainerController {
   static async findTrainerById(
@@ -94,6 +93,27 @@ export default class TrainerController {
       await TrainerService.assignStudent(trainer, studentData);
 
       res.status(201).json({ success: true });
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const zodError = error as ZodError;
+
+        throw new HttpError(403, zodError.name, zodError.issues);
+      }
+      next(error);
+    }
+  }
+
+  static async getTrainerStudents(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const trainer_id = trainerId.parse(req.params.trainerId);
+
+      const students = await TrainerService.getStudents(trainer_id);
+
+      res.status(200).json({ success: true, students });
     } catch (error) {
       if (error instanceof ZodError) {
         const zodError = error as ZodError;

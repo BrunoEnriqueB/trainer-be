@@ -9,6 +9,11 @@ const router = express.Router();
 
 router.get('', validateTrainer, TrainerController.findTrainer);
 router.get('/:id', validateTrainer, TrainerController.findTrainerById);
+router.get(
+  '/:trainerId/students',
+  validateUser,
+  TrainerController.getTrainerStudents
+);
 router.post('/create', validateUser, TrainerController.createTrainer);
 router.post('/assign', validateTrainer, TrainerController.assignStudent);
 

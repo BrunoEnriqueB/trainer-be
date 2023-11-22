@@ -1,13 +1,15 @@
 import UserRepository from '@src/repositories/UsersRepository';
 import TrainerRepository from '@src/repositories/TrainerRepository';
+import StudentRepository from '@src/repositories/StudentRepository';
 
 import { Trainers } from '@prisma/client';
 
 import { TrainerNotFoundException } from '@src/domain/TrainerExceptions';
-import StudentRepository from '@src/repositories/StudentRepository';
 
+import { uuidType } from '@src/schemas/Generic';
 import { TrainerUniqueKeysType } from '@src/schemas/Trainer';
 import { UserUniqueKeysPartialType } from '@src/schemas/User';
+
 import { publicUser } from '@src/@types/user';
 
 export default class TrainerService {
@@ -39,7 +41,7 @@ export default class TrainerService {
   static async assignStudent(
     trainer: Trainers,
     student: UserUniqueKeysPartialType
-  ) {
+  ): Promise<void> {
     try {
       const trainerExists = await TrainerRepository.trainerExists(
         trainer.trainer_id
@@ -57,6 +59,16 @@ export default class TrainerService {
         trainer.trainer_id,
         findStudent.student_id
       );
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async getStudents(trainer_id: uuidType): Promise<publicUser[]> {
+    try {
+      const students = await TrainerRepository.getStudents(trainer_id);
+
+      return students;
     } catch (error) {
       throw error;
     }

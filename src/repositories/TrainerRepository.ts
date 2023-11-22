@@ -2,6 +2,7 @@ import prisma from '@src/config/client';
 
 import { Trainer_Students, Trainers, Users } from '@prisma/client';
 
+import { UserNotFoundException } from '@src/domain/UserExceptions';
 import { StudentAlreadyAssignedException } from '@src/domain/StudentExceptions';
 import { InternalServerError } from '@src/domain/HttpErrors';
 import {
@@ -11,8 +12,9 @@ import {
 
 import { uuidType } from '@src/schemas/Generic';
 import { UserUniqueKeysPartialType } from '@src/schemas/User';
-import { UserNotFoundException } from '@src/domain/UserExceptions';
 import { TrainerUniqueKeysType } from '@src/schemas/Trainer';
+
+import { publicUser } from '@src/@types/user';
 
 export default class TrainerRepository {
   static getTrainerByUserOrThrow(
@@ -121,6 +123,26 @@ export default class TrainerRepository {
         });
 
         resolve(trainerXStudent);
+      } catch (error) {
+        return reject(new InternalServerError());
+      }
+    });
+  }
+
+  static getStudents(trainer_id: uuidType): Promise<publicUser[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const students = await prisma.$queryRaw<publicUser[]>`SELECT u.id id, 
+                u.name name, 
+                u.document document, 
+                u.email email, 
+                u.created_at created_at, 
+                u.updated_at updated_at FROM public."trainerxstudent" ts 
+        INNER JOIN public."Students" s  USING (student_id)
+        INNER JOIN public."Users" u ON s.user_id = u.id
+        WHERE trainer_id = ${trainer_id}`;
+
+        resolve(students);
       } catch (error) {
         return reject(new InternalServerError());
       }
