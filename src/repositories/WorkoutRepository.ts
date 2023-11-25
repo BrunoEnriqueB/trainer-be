@@ -1,45 +1,56 @@
 import prisma from '@src/config/client';
-import { Exercises } from '@prisma/client';
 
-import { ExercisesFilterType, NewExerciseType } from '@src/schemas/Exercise';
-import { uuidType } from '@src/schemas/Generic';
+import { Exercises, Workouts } from '@prisma/client';
 
-import {
-  ExerciseAlreadyExistsException,
-  ExerciseNotFoundException
-} from '@src/domain/ExerciseExceptions';
 import { InternalServerError } from '@src/domain/HttpErrors';
 
-export default class ExercisesRepository {
+import { uuidType } from '@src/schemas/Generic';
+import { NewWorkoutType, WorkoutFiltersType } from '@src/schemas/Workout';
+import { WorkoutAlreadyExistsException } from '@src/domain/WorkoutException';
+
+export default class WorkoutRepository {
   static async create(
-    exercise: NewExerciseType,
+    workout: NewWorkoutType,
     trainer_id: uuidType
-  ): Promise<Exercises> {
+  ): Promise<Workouts> {
     return new Promise(async (resolve, reject) => {
       try {
-        const findExercise = await prisma.exercises.findMany({
-          where: { trainer_id, name: exercise.name }
+        const findWorkout = await prisma.workouts.findUnique({
+          where: { trainer_id_name: { name: workout.name, trainer_id } }
         });
 
-        if (findExercise.length) {
-          return reject(new ExerciseAlreadyExistsException());
+        if (findWorkout) {
+          return reject(new WorkoutAlreadyExistsException());
         }
 
-        const newExercise = await prisma.exercises.create({
+        let { exercises, ...workoutData } = workout;
+
+        const newWorkout = await prisma.workouts.create({
           data: {
-            ...exercise,
-            trainer_id
+            ...workoutData,
+            trainer_id,
+            Workout_Exercices: {
+              createMany: {
+                data: (exercises || []).map((exercise) => {
+                  return {
+                    exercise_id: exercise
+                  };
+                })
+              }
+            }
           }
         });
 
-        resolve(newExercise);
+        resolve(newWorkout);
       } catch (error) {
         return reject(new InternalServerError());
       }
     });
   }
 
-  static async list(filters: ExercisesFilterType): Promise<Exercises[]> {
+  static async list(
+    filters: WorkoutFiltersType
+  ): Promise<(Workouts & { exercises: Exercises[] })[]> {
     {
       return new Promise(async (resolve, reject) => {
         try {

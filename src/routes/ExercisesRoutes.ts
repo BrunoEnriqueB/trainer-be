@@ -9,6 +9,7 @@ import validateUser from '@src/middlewares/validateToken';
 const router = express.Router();
 
 router.get('/', validateUser, ExerciseController.listExercises);
+router.get('/:id', validateUser, ExerciseController.findExercise);
 router.post(
   '/create',
   validateTrainer,

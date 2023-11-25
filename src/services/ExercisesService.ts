@@ -38,4 +38,14 @@ export default class ExerciseService {
       throw error;
     }
   }
+
+  static async findExercise(id: number): Promise<Exercises> {
+    try {
+      const exercises = await ExercisesRepository.getExerciseById(id);
+
+      return exercises;
+    } catch (error) {
+      throw error;
+    }
+  }
 }

@@ -1,4 +1,3 @@
-import { File } from 'buffer';
 import { z } from 'zod';
 
 const ACCEPTED_MIME_TYPES = ['image/jpeg', 'image/png', 'video/mp4'];
