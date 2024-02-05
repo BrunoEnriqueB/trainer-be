@@ -2,6 +2,7 @@
   "compilerOptions": {
     "target": "ES6" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
     "module": "CommonJS" /* Specify what module code is generated. */,
+    "baseUrl": ".",
     "rootDir": "./" /* Specify the root folder within your source files. */,
     "outDir": "./build" /* Specify an output folder for all emitted files. */,
     "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,
@@ -18,7 +19,6 @@
       "@schemas/*": ["./src/schemas/*"]
     }
   },
-
   "ts-node": {
     "require": ["tsconfig-paths/register"]
   },
