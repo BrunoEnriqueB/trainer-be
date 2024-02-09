@@ -1,0 +1,13 @@
+{
+  "include": ["env.d.ts", "src/**/*"],
+  "exclude": ["vitest/**/*"],
+  "compilerOptions": {
+    "composite": true,
+    "baseUrl": ".",
+    "paths": {
+      "@src/*": ["./src/*"]
+    },
+    "strict": true,
+    "experimentalDecorators": true
+  }
+}
