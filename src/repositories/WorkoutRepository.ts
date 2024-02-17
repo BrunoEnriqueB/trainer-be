@@ -1,4 +1,4 @@
-import prisma from '@src/config/client';
+import prisma from '@src/libs/client';
 
 import { Exercises, Workouts } from '@prisma/client';
 

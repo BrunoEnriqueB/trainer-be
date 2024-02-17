@@ -1,4 +1,4 @@
-import prisma from '@src/config/client';
+import { prisma } from '@src/libs/client';
 
 import { Students, Trainers, Users } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
@@ -15,7 +15,7 @@ import {
 import { uuidType } from '@src/schemas/Generic';
 import { TrainerAndStudentsNull, userIndexes } from '@src/@types/user';
 
-export default class UserRepository {
+export default interface UserRepository {
   static getUserAndForeignKeys(
     userIndexes: userIndexes
   ): Promise<

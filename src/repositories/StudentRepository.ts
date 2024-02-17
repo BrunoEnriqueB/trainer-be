@@ -1,4 +1,4 @@
-import prisma from '@src/config/client';
+import prisma from '@src/libs/client';
 
 import { Students } from '@prisma/client';
 
