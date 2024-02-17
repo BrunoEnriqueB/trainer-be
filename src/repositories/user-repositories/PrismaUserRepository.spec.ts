@@ -1,13 +1,20 @@
-import { randomUUID } from 'node:crypto';
-import { UserAlreadyExistsException } from '@src/domain/UserExceptions';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import {
+  UserAlreadyExistsException,
+  UserWithSameCredentials
+} from '@src/domain/UserExceptions';
 import { prisma as prismaMock } from '@src/libs/__mocks__/prisma';
+import {
+  TCreateUser,
+  TUpdateUser
+} from '@src/repositories/user-repositories/UserRepository';
+import { randomUUID } from 'node:crypto';
 import { describe, expect, it, vi } from 'vitest';
-import { TCreateUser } from '@src/repositories/user-repositories/UserRepository';
 import PrismaUserRepository from './PrismaUserRepository';
 import { TUsers } from './UserRepository';
 
-vi.mock('@src/libs/client.ts', async (importOriginal) => {
-  const mod = await importOriginal<typeof import('@src/libs/client.ts')>();
+vi.mock('@src/libs/client', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('@src/libs/client')>();
   return {
     ...mod,
     prisma: prismaMock
@@ -118,16 +125,49 @@ describe('User Repository exists method', () => {
 
     const user = prismaUserRepository.exists({ document: newUser.document });
 
-    expect(user).resolves.toStrictEqual(newUser);
+    expect(user).resolves.toBeTruthy();
   });
 
   it('should return false because not found user', () => {
     prismaMock.users.findUnique.mockResolvedValue(null);
 
-    const user = prismaUserRepository.find({ document: '123.456.789.11' });
+    const user = prismaUserRepository.exists({ document: '123.456.789.11' });
 
-    expect(user).resolves.toBeNull();
+    expect(user).resolves.toBeFalsy();
   });
 });
 
-console.log('teste');
+describe('User Repository update method', () => {
+  const prismaUserRepository = new PrismaUserRepository();
+  it('should throw error user with same credentials', () => {
+    const id = randomUUID();
+    const newUserData: TUpdateUser = {
+      document: '123.456.789.11',
+      name: 'John Doe',
+      email: 'johndoe@gmail.com'
+    };
+
+    prismaMock.users.update.mockRejectedValue(
+      new PrismaClientKnownRequestError('', {
+        code: 'P2002',
+        clientVersion: ''
+      })
+    );
+
+    expect(prismaUserRepository.update(id, newUserData)).rejects.toThrow(
+      UserWithSameCredentials
+    );
+  });
+});
+
+describe('User Repository update password method', () => {
+  const prismaUserRepository = new PrismaUserRepository();
+  it('should throw error user with same credentials', () => {
+    const id = randomUUID();
+    const newPassword = 'myNewPassword';
+
+    expect(
+      prismaUserRepository.updatePassword(id, newPassword)
+    ).resolves.toBeUndefined();
+  });
+});
