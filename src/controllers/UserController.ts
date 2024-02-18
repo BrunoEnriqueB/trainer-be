@@ -1,7 +1,7 @@
 import { ZodError } from 'zod';
 import { NextFunction, Request, Response } from 'express';
 
-import UserService from '@src/services/UserService';
+import { UserService } from '@src/services/UserService';
 
 import { HttpError, UnauthorizedError } from '@src/domain/HttpErrors';
 
@@ -10,7 +10,9 @@ import { changePassword } from '@src/schemas/User';
 import { email, userId } from '@src/schemas/Generic';
 
 export default class UserController {
-  static async findUser(
+  constructor(private userService: UserService) {}
+
+  async findUser(
     req: Request,
     res: Response,
     next: NextFunction
@@ -18,7 +20,7 @@ export default class UserController {
     try {
       const emailData = email.parse(req.params.email);
 
-      const user = await UserService.findUserByEmail(emailData);
+      const user = await this.userService.find({ email: emailData });
 
       res.status(200).json({ success: true, user });
     } catch (error) {
@@ -31,7 +33,7 @@ export default class UserController {
     }
   }
 
-  static async findUserById(
+  async findUserById(
     req: Request,
     res: Response,
     next: NextFunction
@@ -39,7 +41,7 @@ export default class UserController {
     try {
       const id = userId.parse(req.params.id);
 
-      const user = await UserService.findUserById(id);
+      const user = await this.userService.find({ id });
 
       res.status(200).json({ success: true, user });
     } catch (error) {
@@ -52,7 +54,7 @@ export default class UserController {
     }
   }
 
-  static async createUser(
+  async createUser(
     req: Request,
     res: Response,
     next: NextFunction
@@ -60,7 +62,7 @@ export default class UserController {
     try {
       const userBody = user.parse(req.body);
 
-      await UserService.createUser(userBody);
+      await this.userService.create(userBody);
 
       res.status(201).json({ success: true });
     } catch (error) {
@@ -73,7 +75,7 @@ export default class UserController {
     }
   }
 
-  static async updateUser(
+  async updateUser(
     req: Request,
     res: Response,
     next: NextFunction
@@ -88,7 +90,7 @@ export default class UserController {
         throw new UnauthorizedError();
       }
 
-      await UserService.updateUser(user.id, userBody);
+      await this.userService.update(user.id, userBody);
 
       res.status(200).json({ success: true });
     } catch (error) {
@@ -101,7 +103,7 @@ export default class UserController {
     }
   }
 
-  static async changePassword(
+  async changePassword(
     req: Request,
     res: Response,
     next: NextFunction
@@ -116,7 +118,7 @@ export default class UserController {
         throw new UnauthorizedError();
       }
 
-      await UserService.changePassword(
+      await this.userService.updatePassword(
         user.id,
         passwords.actualPassword,
         passwords.newPassword

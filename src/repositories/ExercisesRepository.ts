@@ -1,4 +1,4 @@
-import prisma from '@src/libs/client';
+import { prisma } from '@src/libs/client';
 import { Exercises } from '@prisma/client';
 
 import { ExercisesFilterType, NewExerciseType } from '@src/schemas/Exercise';

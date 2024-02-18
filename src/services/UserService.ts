@@ -1,24 +1,30 @@
-import UserRepository from '@src/repositories/UsersRepository';
-
-import { publicUser, publicUserAndForeigns } from '@src/@types/user';
+import {
+  IUserRepository,
+  TCreateUser,
+  TUpdateUser,
+  TUserIndexes
+} from '@src/repositories/user-repositories/UserRepository';
 
 import { hashPassword, verifyPassword } from '@src/utils/hashPassword';
 
-import {
-  UpdateUserType,
-  UserType,
-  UserUniqueKeysPartialType
-} from '@src/schemas/User';
-import { uuidType } from '@src/schemas/Generic';
-
+import { Users } from '@prisma/client';
 import { HttpError } from '@src/domain/HttpErrors';
+import { UserNotFoundException } from '@src/domain/UserExceptions';
 
-export default class UserService {
-  static async findUserByEmail(email: string): Promise<publicUser> {
+export type TPublicUser = Omit<Users, 'password'>;
+
+export class UserService {
+  constructor(private userRepository: IUserRepository) {}
+
+  async find(data: TUserIndexes): Promise<TPublicUser> {
     try {
-      const { password, ...user } = await UserRepository.getUserAndThrow({
-        email
-      });
+      const findUser = await this.userRepository.find(data);
+
+      if (!findUser) {
+        throw new UserNotFoundException();
+      }
+
+      const { password, ...user } = findUser;
 
       return user;
     } catch (error) {
@@ -26,57 +32,47 @@ export default class UserService {
     }
   }
 
-  static async findUserById(userId: uuidType): Promise<publicUserAndForeigns> {
-    try {
-      const { password, ...user } = await UserRepository.getUserAndThrow({
-        id: userId
-      });
-
-      return user;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  static async createUser(user: UserType) {
+  async create(user: TCreateUser): Promise<void> {
     try {
       const newPassword = await hashPassword(user.password);
 
       user.password = newPassword;
 
-      await UserRepository.createUser(user);
+      await this.userRepository.create(user);
     } catch (error) {
       throw error;
     }
   }
 
-  static async userExists(
-    userUniqueKeys: UserUniqueKeysPartialType
-  ): Promise<boolean> {
+  async exists(userUniqueKeys: TUserIndexes): Promise<boolean> {
     try {
-      return await UserRepository.userExists(userUniqueKeys);
+      return await this.userRepository.exists(userUniqueKeys);
     } catch (error) {
       throw error;
     }
   }
 
-  static async updateUser(userId: uuidType, userData: UpdateUserType) {
+  async update(id: string, userData: TUpdateUser) {
     try {
-      const user = await UserRepository.getUserAndThrow({ id: userId });
-
-      await UserRepository.updateUser(user.id, userData);
+      await this.userRepository.update(id, userData);
     } catch (error) {
       throw error;
     }
   }
 
-  static async changePassword(
-    userId: uuidType,
+  async updatePassword(
+    id: string,
     actualPassword: string,
     newPassword: string
-  ) {
+  ): Promise<void> {
     try {
-      const findUser = await UserRepository.getUserAndThrow({ id: userId });
+      const findUser = await this.userRepository.find({
+        id
+      });
+
+      if (!findUser) {
+        throw new UserNotFoundException();
+      }
 
       const isPasswordsValid = await verifyPassword(
         actualPassword,
@@ -89,7 +85,7 @@ export default class UserService {
 
       const hashedPassword = await hashPassword(newPassword);
 
-      await UserRepository.changePassword(findUser.id, hashedPassword);
+      await this.userRepository.updatePassword(id, hashedPassword);
     } catch (error) {
       throw error;
     }

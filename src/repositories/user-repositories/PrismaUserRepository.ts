@@ -1,11 +1,11 @@
+import { Users } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-import { prisma } from '@src/libs/client';
 import { InternalServerError } from '@src/domain/HttpErrors';
 import {
   UserAlreadyExistsException,
-  UserNotFoundException,
   UserWithSameCredentials
 } from '@src/domain/UserExceptions';
+import { prisma } from '@src/libs/client';
 import {
   IUserRepository,
   TCreateUser,
@@ -13,7 +13,6 @@ import {
   TUserIndexes,
   TUsers
 } from '@src/repositories/user-repositories/UserRepository';
-import { Users } from '@prisma/client';
 
 export default class PrismaUserRepository implements IUserRepository {
   async find(data: TUserIndexes): Promise<TUsers | null> {
