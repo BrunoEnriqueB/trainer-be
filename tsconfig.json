@@ -12,13 +12,14 @@
     "moduleResolution": "node",
     "strictNullChecks": true,
     "skipLibCheck": true,
-    "typeRoots": ["./src/@types"],
+    "typeRoots": ["./src/@types", "./node_modules/@types"],
     "paths": {
       "@src/*": ["./src/*"],
       "@routes/*": ["./src/routes/*"],
       "@schemas/*": ["./src/schemas/*"]
     }
   },
+
   "ts-node": {
     "require": ["tsconfig-paths/register"]
   },
