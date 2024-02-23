@@ -1,11 +1,20 @@
 import { Exercises } from '@prisma/client';
 
 export type TFindData = {
-  id?: string;
+  id?: number;
   name?: string;
   trainer_id?: string;
   startsAt?: Date;
   endsAt?: Date;
+  limit?: number | 100;
+  skip?: number | 0;
+};
+
+export type TFindResponse = {
+  exercises: Exercises[];
+  total: number;
+  limit: number;
+  skip: number;
 };
 
 export type TCreateExercise = Omit<
@@ -14,9 +23,7 @@ export type TCreateExercise = Omit<
 >;
 
 export interface IExercisesRepository {
-  find(data: TFindData): Promise<Exercises[]>;
+  find(data: TFindData): Promise<TFindResponse>;
 
   create(data: TCreateExercise): Promise<Exercises>;
-
-  findAll(limit: number, skip: number): Promise<Exercises[]>;
 }
