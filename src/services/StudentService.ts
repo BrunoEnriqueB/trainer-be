@@ -1,16 +1,22 @@
-import UserRepository from '@src/repositories/UsersRepository';
-import StudentRepository from '@src/repositories/StudentRepository';
-
-import { UserUniqueKeysPartialType } from '@src/schemas/User';
+import { TrainerNotFoundException } from '@src/domain/TrainerExceptions';
+import { IStudentRepository } from '@src/repositories/student-repositories/StudentRepository';
+import { IUserRepository } from '@src/repositories/user-repositories/UserRepository';
 
 export default class StudentService {
-  static async insertStudent(
-    trainer: UserUniqueKeysPartialType
-  ): Promise<void> {
-    try {
-      const findUser = await UserRepository.getUserAndThrow(trainer);
+  constructor(
+    private studentRepository: IStudentRepository,
+    private userRepository: IUserRepository
+  ) {}
 
-      await StudentRepository.insertStudent(findUser.id);
+  async insert(user_id: string): Promise<void> {
+    try {
+      const findUser = await this.userRepository.find({ id: user_id });
+
+      if (!findUser || !findUser.Trainers) {
+        throw new TrainerNotFoundException();
+      }
+
+      await this.studentRepository.create(findUser.id);
     } catch (error) {
       throw error;
     }

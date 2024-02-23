@@ -33,11 +33,16 @@ export default class PrismaUserRepository implements IUserRepository {
     });
   }
 
-  async create(data: TCreateUser): Promise<Users> {
+  async create({
+    name,
+    email,
+    document,
+    password
+  }: TCreateUser): Promise<Users> {
     return new Promise(async (resolve, reject) => {
       try {
         const findUser = await prisma.users.findMany({
-          where: { OR: [{ email: data.email }, { document: data.document }] }
+          where: { OR: [{ email: email }, { document: document }] }
         });
 
         if (findUser.length) {
@@ -46,10 +51,10 @@ export default class PrismaUserRepository implements IUserRepository {
 
         const user = await prisma.users.create({
           data: {
-            document: data.document,
-            email: data.email,
-            name: data.name,
-            password: data.password
+            document: document,
+            email: email,
+            name: name,
+            password: password
           }
         });
 
@@ -96,6 +101,7 @@ export default class PrismaUserRepository implements IUserRepository {
       }
     });
   }
+
   async updatePassword(id: string, password: string): Promise<void> {
     return new Promise(async (resolve, reject) => {
       try {

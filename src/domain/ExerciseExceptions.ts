@@ -6,7 +6,7 @@ abstract class ExerciseException<T> extends HttpError<T> {
   }
 }
 
-export class ExerciseNotFoundException<T> extends ExerciseException<T> {
+export class ExerciseNotFoundException<T> extends HttpError<T> {
   constructor() {
     super(404, 'Exercise not found');
   }

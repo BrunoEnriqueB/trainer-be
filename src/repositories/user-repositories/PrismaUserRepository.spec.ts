@@ -1,3 +1,6 @@
+import { randomUUID } from 'node:crypto';
+import { describe, expect, it } from 'vitest';
+
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import {
   UserAlreadyExistsException,
@@ -8,18 +11,8 @@ import {
   TCreateUser,
   TUpdateUser
 } from '@src/repositories/user-repositories/UserRepository';
-import { randomUUID } from 'node:crypto';
-import { describe, expect, it, vi } from 'vitest';
 import PrismaUserRepository from './PrismaUserRepository';
 import { TUsers } from './UserRepository';
-
-vi.mock('@src/libs/client', async (importOriginal) => {
-  const mod = await importOriginal<typeof import('@src/libs/client')>();
-  return {
-    ...mod,
-    prisma: prismaMock
-  };
-});
 
 describe('User Repository create method', () => {
   const prismaUserRepository = new PrismaUserRepository();
@@ -80,7 +73,7 @@ describe('User Repository find method', () => {
   it('should return a user', () => {
     const newUser: TUsers = {
       id: randomUUID(),
-      document: '123.456.789.11',
+      document: '12345678911',
       name: 'John Doe',
       email: 'johndoe@gmail.com',
       created_at: new Date(),
@@ -100,7 +93,7 @@ describe('User Repository find method', () => {
   it('should not return a user', () => {
     prismaMock.users.findUnique.mockResolvedValue(null);
 
-    const user = prismaUserRepository.find({ document: '123.456.789.11' });
+    const user = prismaUserRepository.find({ document: '12345678911' });
 
     expect(user).resolves.toBeNull();
   });
@@ -111,7 +104,7 @@ describe('User Repository exists method', () => {
   it('should return true because found a user', () => {
     const newUser: TUsers = {
       id: randomUUID(),
-      document: '123.456.789.11',
+      document: '12345678911',
       name: 'John Doe',
       email: 'johndoe@gmail.com',
       created_at: new Date(),
@@ -131,7 +124,7 @@ describe('User Repository exists method', () => {
   it('should return false because not found user', () => {
     prismaMock.users.findUnique.mockResolvedValue(null);
 
-    const user = prismaUserRepository.exists({ document: '123.456.789.11' });
+    const user = prismaUserRepository.exists({ document: '12345678911' });
 
     expect(user).resolves.toBeFalsy();
   });
@@ -142,7 +135,7 @@ describe('User Repository update method', () => {
   it('should throw error user with same credentials', () => {
     const id = randomUUID();
     const newUserData: TUpdateUser = {
-      document: '123.456.789.11',
+      document: '12345678911',
       name: 'John Doe',
       email: 'johndoe@gmail.com'
     };
