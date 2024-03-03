@@ -1,4 +1,8 @@
 import { Users } from '@prisma/client';
+import {
+  UserAlreadyExistsException,
+  UserWithSameCredentials
+} from '@src/domain/UserExceptions';
 import { randomUUID } from 'node:crypto';
 import {
   IUserRepository,
@@ -63,20 +67,22 @@ export default class InMemoryUserRepository implements IUserRepository {
   }
 
   async update(id: string, data: TUpdateUser): Promise<void> {
-    const user = this.users.find((user) => {
-      if (!data.email && !data.document) return user.id === id;
+    const userWithSameId = this.users.find((user) => user.id === id);
+    const userWithSameCredentials = this.users.find((user) => {
+      if (user.id === id) return;
       if (data.document && !data.email) return user.document === data.document;
       if (!data.document && data.email) return user.email === data.email;
 
       return user.document === data.document && user.email === data.email;
     });
 
-    if (!user) return;
-    if (user && user.id !== id) {
+    if (!userWithSameId) return;
+    if (userWithSameCredentials) {
+      throw new UserWithSameCredentials();
     }
     for (const key in data) {
       type keyofdata = keyof typeof data;
-      user[key as keyofdata] = data[key as keyofdata]!;
+      userWithSameId[key as keyofdata] = data[key as keyofdata]!;
     }
   }
 

@@ -5,9 +5,10 @@ export type UsersWithStudent = Users & {
 };
 
 export default interface ITrainerRepository {
-  find(trainer_id: string): Promise<Trainers>;
+  find(trainer_id: string): Promise<Trainers | null>;
 
   exists(trainer_id: string): Promise<boolean>;
+
   create(user_id: string): Promise<Trainers>;
 
   assignStudent(
@@ -15,5 +16,5 @@ export default interface ITrainerRepository {
     student_id: string
   ): Promise<Trainer_Students>;
 
-  getStudents(trainer_id: string): Promise<UsersWithStudent>;
+  getStudents(trainer_id: string): Promise<UsersWithStudent[]>;
 }

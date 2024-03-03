@@ -32,7 +32,7 @@ describe('User Repository create method', () => {
     const user = inMemoryUserRepository.create(newUser);
     expect(inMemoryUserRepository.users).toHaveLength(1);
     expect(user).resolves.toStrictEqual(inMemoryUserRepository.users[0]);
-    expect(await user).equal(newUser.document);
+    expect((await user).document).equal(newUser.document);
   });
 
   it('should throw exception user already exists', () => {
@@ -51,6 +51,7 @@ describe('User Repository create method', () => {
       password: 'johndoe10',
       name: 'John Doe 2'
     });
+
     expect(user).rejects.toBeInstanceOf(UserAlreadyExistsException);
     expect(inMemoryUserRepository.users).toHaveLength(1);
     expect(inMemoryUserRepository.users[0].name).equal(newUser.name);
@@ -192,7 +193,7 @@ describe('User Repository find method', () => {
       document: '12345678911'
     });
 
-    expect(user).toBeNull();
+    expect(user).resolves.toBeNull();
   });
 });
 
@@ -253,8 +254,13 @@ describe('User Repository exists method', () => {
 });
 
 describe('User Repository update method', () => {
-  const inMemoryUserRepository = new InMemoryUserRepository();
-  it('should throw error because user2 has same email ', () => {
+  let inMemoryUserRepository: InMemoryUserRepository;
+
+  beforeEach(() => {
+    inMemoryUserRepository = new InMemoryUserRepository();
+  });
+
+  it(`should throw error because user2 is updating to user1's email`, () => {
     const user1: TUsers = {
       id: '1',
       document: '12345678911',
@@ -288,7 +294,7 @@ describe('User Repository update method', () => {
     ).rejects.toThrow(UserWithSameCredentials);
   });
 
-  it('should throw error user with same credentials by document', () => {
+  it(`should throw error because user2 is updating to user1's document`, () => {
     const user1: TUsers = {
       id: '1',
       document: '12345678911',
@@ -322,7 +328,7 @@ describe('User Repository update method', () => {
     ).rejects.toThrow(UserWithSameCredentials);
   });
 
-  it('should throw error user with same credentials by document and email', () => {
+  it(`should throw error because user2 is updating to user1's email and document`, () => {
     const user1: TUsers = {
       id: '1',
       document: '12345678911',
@@ -357,8 +363,8 @@ describe('User Repository update method', () => {
     ).rejects.toThrow(UserWithSameCredentials);
   });
 
-  it('should throw error user with same credentials by document and email', () => {
-    const user1: TUsers = {
+  it('should update all user data', () => {
+    const user: TUsers = {
       id: '1',
       document: '12345678911',
       name: 'John Doe',
@@ -370,11 +376,35 @@ describe('User Repository update method', () => {
       Trainers: null
     };
 
-    const user2: TUsers = {
-      id: '2',
-      document: '12345678912',
-      name: 'John Doe 2',
-      email: 'johndoe@hotmail.com',
+    inMemoryUserRepository.users.push(user);
+
+    const newEmail = 'johndoe@hotmail.com';
+    const newDocument = '12345678910';
+    const newName = 'John Doe House';
+
+    const updatedUser: TUsers = {
+      ...user,
+      document: newDocument,
+      email: newEmail,
+      name: newName
+    };
+
+    expect(
+      inMemoryUserRepository.update(user.id, {
+        document: newDocument,
+        email: newEmail,
+        name: newName
+      })
+    ).resolves.toBeUndefined();
+    expect(inMemoryUserRepository.users[0]).toStrictEqual(updatedUser);
+  });
+
+  it('should update just user name ', () => {
+    const user: TUsers = {
+      id: '1',
+      document: '12345678911',
+      name: 'John Doe',
+      email: 'johndoe@gmail.com',
       created_at: new Date(),
       password: 'mypassword',
       updated_at: new Date(),
@@ -382,25 +412,117 @@ describe('User Repository update method', () => {
       Trainers: null
     };
 
-    inMemoryUserRepository.users.push(user1, user2);
+    inMemoryUserRepository.users.push(user);
+    const newEmail = 'johndoe@hotmail.com';
+    const newDocument = '12345678910';
+    const newName = 'John Doe House';
+
+    const updatedUser: TUsers = {
+      ...user,
+      name: newName
+    };
 
     expect(
-      inMemoryUserRepository.update(user2.id, {
-        document: user1.document,
-        email: user1.email
+      inMemoryUserRepository.update(user.id, {
+        name: newName
       })
-    ).rejects.toThrow(UserWithSameCredentials);
+    ).resolves.toBeUndefined();
+    expect(inMemoryUserRepository.users[0]).toStrictEqual(updatedUser);
+  });
+
+  it('should update just user email', () => {
+    const user: TUsers = {
+      id: '1',
+      document: '12345678911',
+      name: 'John Doe',
+      email: 'johndoe@gmail.com',
+      created_at: new Date(),
+      password: 'mypassword',
+      updated_at: new Date(),
+      Students: null,
+      Trainers: null
+    };
+
+    inMemoryUserRepository.users.push(user);
+
+    const newEmail = 'johndoe@hotmail.com';
+
+    const updatedUser: TUsers = {
+      ...user,
+      email: newEmail
+    };
+
+    expect(
+      inMemoryUserRepository.update(user.id, {
+        email: newEmail
+      })
+    ).resolves.toBeUndefined();
+    expect(inMemoryUserRepository.users[0]).toStrictEqual(updatedUser);
+  });
+
+  it('should update just user document', () => {
+    const user: TUsers = {
+      id: '1',
+      document: '12345678911',
+      name: 'John Doe',
+      email: 'johndoe@gmail.com',
+      created_at: new Date(),
+      password: 'mypassword',
+      updated_at: new Date(),
+      Students: null,
+      Trainers: null
+    };
+
+    inMemoryUserRepository.users.push(user);
+
+    const newDocument = '12345678910';
+
+    const updatedUser: TUsers = {
+      ...user,
+      document: newDocument
+    };
+
+    expect(
+      inMemoryUserRepository.update(user.id, {
+        document: newDocument
+      })
+    ).resolves.toBeUndefined();
+    expect(inMemoryUserRepository.users[0]).toStrictEqual(updatedUser);
   });
 });
 
-// describe('User Repository update password method', () => {
-//   const inMemoryUserRepository = new InMemoryUserRepository();
-//   it('should throw error user with same credentials', () => {
-//     const id = randomUUID();
-//     const newPassword = 'myNewPassword';
+describe('User Repository update password method', () => {
+  let inMemoryUserRepository: InMemoryUserRepository;
 
-//     expect(
-//       inMemoryUserRepository.updatePassword(id, newPassword)
-//     ).resolves.toBeUndefined();
-//   });
-// });
+  beforeEach(() => {
+    inMemoryUserRepository = new InMemoryUserRepository();
+  });
+
+  it('should updates user password', () => {
+    const user: TUsers = {
+      id: '1',
+      document: '12345678911',
+      name: 'John Doe',
+      email: 'johndoe@gmail.com',
+      created_at: new Date(),
+      password: 'mypassword',
+      updated_at: new Date(),
+      Students: null,
+      Trainers: null
+    };
+
+    inMemoryUserRepository.users.push(user);
+
+    const newPassword = 'myNewPassword';
+
+    const updatedUser: TUsers = {
+      ...user,
+      password: newPassword
+    };
+
+    expect(
+      inMemoryUserRepository.updatePassword(user.id, newPassword)
+    ).resolves.toBeUndefined();
+    expect(inMemoryUserRepository.users[0]).toStrictEqual(updatedUser);
+  });
+});

@@ -20,13 +20,18 @@ describe('Exercises Repository find method', () => {
       updated_at: new Date()
     };
 
-    prismaMock.exercises.findMany.mockResolvedValue([exercise]);
+    prismaMock.$transaction.mockResolvedValue([[exercise], 1]);
 
     expect(
       prismaExercisesRepository.find({
         id: 1
       })
-    ).resolves.toStrictEqual([exercise]);
+    ).resolves.toStrictEqual({
+      exercises: [exercise],
+      total: 1,
+      skip: 0,
+      limit: 0
+    });
   });
 
   it('should throw error startsAt is later than endsAt', () => {

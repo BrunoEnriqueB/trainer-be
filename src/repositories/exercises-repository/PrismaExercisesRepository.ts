@@ -5,7 +5,8 @@ import { prisma } from '@src/libs/client';
 import {
   IExercisesRepository,
   TCreateExercise,
-  TFindData
+  TFindData,
+  TFindResponse
 } from './ExercisesRepository';
 
 export default class PrismaExercisesRepository implements IExercisesRepository {
@@ -17,7 +18,7 @@ export default class PrismaExercisesRepository implements IExercisesRepository {
     skip,
     startsAt,
     endsAt
-  }: TFindData): Promise<Exercises[]> {
+  }: TFindData): Promise<TFindResponse> {
     return new Promise(async (resolve, reject) => {
       try {
         const isStartsAtLaterThanEndsAt =
@@ -27,22 +28,45 @@ export default class PrismaExercisesRepository implements IExercisesRepository {
           return reject(new StartsAtLaterThanEndsAt());
         }
 
-        const exercises = await prisma.exercises.findMany({
-          where: {
-            id,
-            name,
-            trainer_id,
-            created_at: {
-              gte: startsAt,
-              lte: endsAt
+        const [exercises, total] = await prisma.$transaction([
+          prisma.exercises.findMany({
+            where: {
+              id,
+              name: {
+                contains: name,
+                mode: 'insensitive'
+              },
+              trainer_id,
+              created_at: {
+                gte: startsAt,
+                lte: endsAt
+              }
+            },
+            skip,
+            take: limit
+          }),
+          prisma.exercises.count({
+            where: {
+              id,
+              name,
+              trainer_id,
+              created_at: {
+                gte: startsAt,
+                lte: endsAt
+              }
             }
-          },
-          skip,
-          take: limit
-        });
+          })
+        ]);
 
-        return resolve(exercises);
-      } catch (error) {}
+        return resolve({
+          exercises,
+          total,
+          skip: skip || 0,
+          limit: limit || 0
+        });
+      } catch (error) {
+        return reject(error);
+      }
     });
   }
 
