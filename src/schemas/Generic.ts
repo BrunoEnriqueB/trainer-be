@@ -75,6 +75,15 @@ const video = z
         )}] but was ${file.mimetype}`
       });
     }
+  })
+  .transform((data) => {
+    return {
+      ...data,
+      originalname: data.originalname
+        .toLowerCase()
+        .replace(/[ ]/g, '_')
+        .replace('.', `_${Date.now()}.`)
+    };
   });
 
 const userId = z
