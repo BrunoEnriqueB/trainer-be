@@ -4,7 +4,7 @@
   "description": "This will be a chat project",
   "main": "index.ts",
   "scripts": {
-    "start": "npx prisma migrate dev --name initialize && nodemon --exec 'node --inspect=0.0.0.0:9229 --require ts-node/register src/index.ts'",
+    "start": "npx prisma db push && nodemon --exec 'node --inspect=0.0.0.0:9229 --require ts-node/register src/index.ts'",
     "prettier-format": "prettier --config .prettierrc ./src/*.ts ./src/**/*.ts --write",
     "dev:docker": "docker-compose up --build",
     "build": "npm run prettier-format && tsc --build"

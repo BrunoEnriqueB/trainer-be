@@ -2,18 +2,32 @@ import { z } from 'zod';
 import { name, description, video, id } from '@schemas/Generic';
 import { trainerId } from './Trainer';
 
-const exerciseBody = z.object({
-  name: z
-    .string({
-      required_error: 'Missing field: name',
-      invalid_type_error: 'Name must be a string'
-    })
-    .trim()
-    .regex(/^[aA-zZ ]*$/gi)
-    .max(60, { message: 'Name must have a maximum of 60 characters' }),
-  description,
-  video
-});
+const exerciseBody = z
+  .object({
+    name: z
+      .string({
+        required_error: 'Missing field: name',
+        invalid_type_error: 'Name must be a string'
+      })
+      .trim()
+      .regex(/^[aA-zZ ]*$/gi)
+      .max(60, { message: 'Name must have a maximum of 60 characters' }),
+    description,
+    video
+  })
+  .transform((data) => {
+    return {
+      ...data,
+      video: {
+        ...data.video,
+        originalname: data.name
+          .toLowerCase()
+          .replace(/[ ]/g, '_')
+          .replace(/\W+/g, '')
+          .replace('.', `_${Date.now()}.`)
+      }
+    };
+  });
 
 const newExercise = z.object({
   name,
