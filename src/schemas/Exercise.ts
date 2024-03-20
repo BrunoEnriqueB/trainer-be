@@ -39,7 +39,11 @@ const newExercise = z.object({
     })
     .url({
       message: 'Video_url is not a valid url'
-    })
+    }),
+  video_name: z.string({
+    required_error: 'Missing field: video_url',
+    invalid_type_error: 'Video_url must be a string'
+  })
 });
 
 const exercisesFilters = z.object({

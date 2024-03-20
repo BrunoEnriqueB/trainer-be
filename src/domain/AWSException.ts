@@ -11,3 +11,9 @@ export class AWSUploadImage<T> extends AWSException<T> {
     super(400, 'Some error occurred when uploading your video');
   }
 }
+
+export class AWSDeleteImage<T> extends AWSException<T> {
+  constructor() {
+    super(400, 'Some error occurred when deleting your video');
+  }
+}

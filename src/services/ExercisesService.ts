@@ -1,4 +1,5 @@
 import { Exercises, Trainers } from '@prisma/client';
+import { ExerciseAlreadyExistsException } from '@src/domain/ExerciseExceptions';
 
 import { TrainerNotFoundException } from '@src/domain/TrainerExceptions';
 
@@ -6,6 +7,7 @@ import ExercisesRepository from '@src/repositories/ExercisesRepository';
 import TrainerRepository from '@src/repositories/TrainerRepository';
 
 import { ExercisesFilterType, NewExerciseType } from '@src/schemas/Exercise';
+import AWSServices from './AWSServices';
 
 export default class ExerciseService {
   static async create(
@@ -23,6 +25,12 @@ export default class ExerciseService {
 
       await ExercisesRepository.create(newExercise, trainer.trainer_id);
     } catch (error) {
+      if (error instanceof ExerciseAlreadyExistsException) {
+        const awsServices = new AWSServices();
+
+        await awsServices.deleteFile(newExercise.video_name);
+      }
+
       throw error;
     }
   }

@@ -1,6 +1,6 @@
 import AWS, { S3 } from 'aws-sdk';
 import { ManagedUpload } from 'aws-sdk/clients/s3';
-import { AWSUploadImage } from '@src/domain/AWSException';
+import { AWSDeleteImage, AWSUploadImage } from '@src/domain/AWSException';
 
 export default class AwsServices {
   private client: S3;
@@ -20,9 +20,7 @@ export default class AwsServices {
     this.client = new AWS.S3();
   }
 
-  async uploadImage(
-    file: Express.Multer.File
-  ): Promise<ManagedUpload.SendData> {
+  async uploadFile(file: Express.Multer.File): Promise<ManagedUpload.SendData> {
     return new Promise((resolve, reject): void => {
       const params: S3.PutObjectRequest = {
         Bucket: this.BUCKETNAME,
@@ -38,6 +36,26 @@ export default class AwsServices {
         data.Location = `${this.CLOUDFRONTURL}${file.originalname}`;
         resolve(data);
       });
+    });
+  }
+
+  async deleteFile(fileName: string): Promise<void> {
+    return new Promise((resolve, reject): void => {
+      const params: S3.DeleteObjectRequest = {
+        Bucket: this.BUCKETNAME,
+        Key: fileName
+      };
+
+      this.client.deleteObject(
+        params,
+        (err: Error, data: S3.DeleteObjectOutput) => {
+          if (err) {
+            return reject(new AWSDeleteImage());
+          }
+
+          resolve();
+        }
+      );
     });
   }
 }

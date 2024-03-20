@@ -8,22 +8,23 @@ import { exerciseBody, exercisesFilters } from '@src/schemas/Exercise';
 import AWSServices from '@src/services/AWSServices';
 import ExerciseService from '@src/services/ExercisesService';
 import { id } from '@src/schemas/Generic';
+import { ExerciseAlreadyExistsException } from '@src/domain/ExerciseExceptions';
 
 export default class ExercisesController {
   static async create(req: Request, res: Response, next: NextFunction) {
+    const exercise = exerciseBody.parse({ ...req.body, video: req.file });
     try {
-      const exercise = exerciseBody.parse({ ...req.body, video: req.file });
-
       const AwsServices = new AWSServices();
 
-      const uploadImage = await AwsServices.uploadImage(exercise.video);
+      const uploadImage = await AwsServices.uploadFile(exercise.video);
       const trainer = req.trainer!;
 
       await ExerciseService.create(
         {
           name: exercise.name,
           description: exercise.description,
-          video_url: uploadImage.Location
+          video_url: uploadImage.Location,
+          video_name: uploadImage.Key
         },
         trainer
       );
