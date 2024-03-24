@@ -26,7 +26,7 @@ export default class AwsServices {
         Bucket: this.BUCKETNAME,
         Key: file.originalname,
         Body: file.buffer,
-        ContentType: file.mimetype
+        ContentType: this.convertContentTypeByMimetype(file.mimetype)
       };
 
       this.client.upload(params, (err: Error, data: ManagedUpload.SendData) => {
@@ -37,6 +37,10 @@ export default class AwsServices {
         resolve(data);
       });
     });
+  }
+
+  private convertContentTypeByMimetype(mimetype: string){
+    return mimetype === "video/quicktime" ? "video/mp4" : mimetype
   }
 
   async deleteFile(fileName: string): Promise<void> {

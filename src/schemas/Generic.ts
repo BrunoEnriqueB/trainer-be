@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const ACCEPTED_MIME_TYPES = ['image/jpeg', 'image/png', 'video/mp4'];
+const ACCEPTED_MIME_TYPES = ['image/jpeg', 'image/png', 'video/mp4', 'video/quicktime'];
 
 const email = z
   .string({

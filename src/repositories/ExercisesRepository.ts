@@ -27,7 +27,9 @@ export default class ExercisesRepository {
 
         const newExercise = await prisma.exercises.create({
           data: {
-            ...exercise,
+            name: exercise.name,
+            description: exercise.description,
+            video_url: exercise.video_url,
             trainer_id
           }
         });
