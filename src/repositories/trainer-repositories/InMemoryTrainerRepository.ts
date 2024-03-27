@@ -1,19 +1,20 @@
+import { Students, Trainer_Students, Trainers, Users } from '@prisma/client';
 import {
-  Trainers,
-  Trainer_Students,
-  Students,
-  Users,
-  Prisma
-} from '@prisma/client';
-import ITrainerRepository, { UsersWithStudent } from './TrainerRepository';
-import { randomInt, randomUUID } from 'crypto';
-import { TrainerAlreadyExistsException } from '@src/domain/TrainerExceptions';
-import { StudentAlreadyAssignedException } from '@src/domain/StudentExceptions';
+  StudentAlreadyAssignedException,
+  StudentNotFoundException
+} from '@src/domain/StudentExceptions';
+import {
+  TrainerAlreadyExistsException,
+  TrainerNotFoundException
+} from '@src/domain/TrainerExceptions';
+import { randomUUID } from 'crypto';
+import { ITrainerRepository, UsersWithStudent } from './TrainerRepository';
+import { UserNotFoundException } from '@src/domain/UserExceptions';
 
 export type UsersAndStudentsRelation = Users & {
   Students:
     | (Students & {
-        Trainers_Students: Trainer_Students;
+        Trainers_Students: Trainer_Students | null;
       })
     | null;
 };
@@ -35,6 +36,12 @@ export default class InMemoryTrainerRepository implements ITrainerRepository {
   }
 
   async create(user_id: string): Promise<Trainers> {
+    const findUser = this.users.find((user) => user.id === user_id);
+
+    if (!findUser) {
+      throw new UserNotFoundException();
+    }
+
     const trainerAlreadyExists = this.trainers.find(
       (trainer) => trainer.user_id === user_id
     );
@@ -57,6 +64,21 @@ export default class InMemoryTrainerRepository implements ITrainerRepository {
     trainer_id: string,
     student_id: string
   ): Promise<Trainer_Students> {
+    const findTrainer = this.trainers.find(
+      (trainer) => trainer.trainer_id === trainer_id
+    );
+    const findStudent = this.students.find(
+      (student) => student.student_id === student_id
+    );
+
+    if (!findTrainer) {
+      throw new TrainerNotFoundException();
+    }
+
+    if (!findStudent) {
+      throw new StudentNotFoundException();
+    }
+
     const trainersXStudentAlreadyExists = this.trainersXStudents.find(
       (trainerXStudent) =>
         trainerXStudent.student_id === student_id &&
@@ -80,9 +102,18 @@ export default class InMemoryTrainerRepository implements ITrainerRepository {
   }
 
   async getStudents(trainer_id: string): Promise<UsersWithStudent[]> {
+    const trainer = this.trainers.find(
+      (trainer) => trainer.trainer_id === trainer_id
+    );
+
+    if (!trainer) {
+      throw new TrainerNotFoundException();
+    }
+
     const trainerXStudents = this.users.filter((user) => {
       return (
         user.Students &&
+        user.Students.Trainers_Students &&
         user.Students.Trainers_Students.trainer_id === trainer_id
       );
     });

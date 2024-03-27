@@ -1,7 +1,15 @@
 import { Exercises } from '@prisma/client';
 import { ExerciseAlreadyExistsException } from '@src/domain/ExerciseExceptions';
 import { StartsAtLaterThanEndsAt } from '@src/domain/ValidationsExceptions';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi
+} from 'vitest';
 import InMemoryExercisesRepository from './InMemoryExercisesRepository';
 
 describe('Exercises Repository find method', () => {
@@ -278,14 +286,24 @@ describe('Exercises Repository find method', () => {
 describe('Exercises Repository create method', () => {
   let inMemoryExercisesRepository: InMemoryExercisesRepository;
 
-  beforeEach(() => {
-    inMemoryExercisesRepository = new InMemoryExercisesRepository();
+  beforeAll(() => {
     vi.mock('node:crypto', async (importOriginal) => {
       return {
         ...(await importOriginal<typeof import('crypto')>()),
         randomInt: () => 1
       };
     });
+    vi.useFakeTimers();
+    vi.setSystemTime('2024-02-03');
+  });
+
+  afterAll(() => {
+    vi.resetAllMocks();
+    vi.useRealTimers();
+  });
+
+  beforeEach(() => {
+    inMemoryExercisesRepository = new InMemoryExercisesRepository();
   });
 
   it('should create an exercise', () => {

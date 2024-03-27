@@ -17,9 +17,9 @@
       "@src/*": ["./src/*"],
       "@routes/*": ["./src/routes/*"],
       "@schemas/*": ["./src/schemas/*"]
-    }
+    },
+    "types": ["vitest/globals"]
   },
-
   "ts-node": {
     "require": ["tsconfig-paths/register"]
   },

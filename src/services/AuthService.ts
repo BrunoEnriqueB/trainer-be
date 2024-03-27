@@ -2,37 +2,45 @@ import Token from '@src/libs/token';
 
 import { Trainers, Users } from '@prisma/client';
 
-import UserRepository from '@src/repositories/UsersRepository';
-import TrainerRepository from '@src/repositories/TrainerRepository';
+import { ITrainerRepository } from '@src/repositories/trainer-repositories/TrainerRepository';
+import { IUserRepository } from '@src/repositories/user-repositories/UserRepository';
 
 import { UserSignType, UserUniqueKeysPartialType } from '@src/schemas/User';
 
-import { hashPassword, verifyPassword } from '@src/utils/hashPassword';
-
-import { UserNotFoundException } from '@src/domain/UserExceptions';
 import {
+  InvalidCredentials,
   TokenNotAuthorized,
   UserMustBeATrainer
 } from '@src/domain/AuthExceptions';
-import { uuidType } from '@src/schemas/Generic';
-import generatePassword from '@src/utils/generatePassword';
-import sendEmail from '@src/utils/sendEmail';
 import { RecoveryPasswordTemplate } from '@src/domain/EmailConstructor';
+import { UserNotFoundException } from '@src/domain/UserExceptions';
 
-export default class AuthService {
-  static async authUser(user: UserSignType): Promise<string> {
+import { uuidType } from '@src/schemas/Generic';
+
+import generatePassword from '@src/utils/generatePassword';
+import { hashPassword, verifyPassword } from '@src/utils/hashPassword';
+import sendEmail from '@src/utils/sendEmail';
+
+export class AuthService {
+  constructor(private userRepository: IUserRepository) {}
+
+  async authUser(user: UserSignType): Promise<string> {
     try {
       const { password, ...keys } = user;
 
-      const userFind = await UserRepository.getUserAndThrow(keys);
+      const findUser = await this.userRepository.find(keys);
 
-      const isPasswordValid = await verifyPassword(password, userFind.password);
-
-      if (!isPasswordValid) {
+      if (!findUser) {
         throw new UserNotFoundException();
       }
 
-      const token = await Token.createToken(userFind.id);
+      const isPasswordValid = await verifyPassword(password, findUser.password);
+
+      if (!isPasswordValid) {
+        throw new InvalidCredentials();
+      }
+
+      const token = await Token.createToken(findUser.id);
 
       return token;
     } catch (error) {
@@ -40,9 +48,11 @@ export default class AuthService {
     }
   }
 
-  static async validateUser(userId: uuidType): Promise<Users> {
+  async validateUser(userId: uuidType): Promise<Users> {
     try {
-      const user = await UserRepository.getUserAndForeignKeys({ id: userId });
+      const user = await this.userRepository.find({
+        id: userId
+      });
 
       if (!user) {
         throw new TokenNotAuthorized();
@@ -54,9 +64,11 @@ export default class AuthService {
     }
   }
 
-  static async validateTrainer(userId: uuidType): Promise<Trainers> {
+  async validateTrainer(userId: uuidType): Promise<Trainers> {
     try {
-      const user = await UserRepository.getUserAndForeignKeys({ id: userId });
+      const user = await this.userRepository.find({
+        id: userId
+      });
 
       if (!user) {
         throw new TokenNotAuthorized();
@@ -72,15 +84,19 @@ export default class AuthService {
     }
   }
 
-  static async recoveryUserPassword(user: UserUniqueKeysPartialType) {
+  async recoveryUserPassword(user: UserUniqueKeysPartialType) {
     try {
-      const findUser = await UserRepository.getUserAndThrow(user);
+      const findUser = await this.userRepository.find(user);
+
+      if (!findUser) {
+        throw new UserNotFoundException();
+      }
 
       const generatedPassword = generatePassword();
 
       const newUserPassword = await hashPassword(generatedPassword);
 
-      await UserRepository.changePassword(findUser.id, newUserPassword);
+      await this.userRepository.updatePassword(findUser.id, newUserPassword);
 
       await sendEmail(
         new RecoveryPasswordTemplate([findUser.email], generatedPassword)

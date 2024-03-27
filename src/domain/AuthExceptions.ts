@@ -23,3 +23,9 @@ export class UserNotFoundException<T> extends AuthException<T> {
     super(404, 'User not found');
   }
 }
+
+export class InvalidCredentials<T> extends AuthException<T> {
+  constructor() {
+    super(401, 'Invalid credentials');
+  }
+}

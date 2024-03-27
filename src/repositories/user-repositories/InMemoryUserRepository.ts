@@ -1,8 +1,5 @@
 import { Users } from '@prisma/client';
-import {
-  UserAlreadyExistsException,
-  UserWithSameCredentials
-} from '@src/domain/UserExceptions';
+import { UserWithSameCredentials } from '@src/domain/UserExceptions';
 import { randomUUID } from 'node:crypto';
 import {
   IUserRepository,
@@ -15,15 +12,15 @@ import { UserAlreadyExistsException } from '@src/domain/UserExceptions';
 
 export default class InMemoryUserRepository implements IUserRepository {
   public users: TUsers[] = [];
-  async find({ document, email, id }: TUserIndexes): Promise<TUsers | null> {
+  async find(data: TUserIndexes): Promise<TUsers | null> {
     const user = this.users.find((user: TUsers) => {
-      if (email && !document) {
-        return email === user.email;
+      for (const key in data) {
+        if (data[key as keyof typeof data] !== user[key as keyof typeof data]) {
+          return false;
+        }
       }
-      if (!email && document) {
-        return document === user.document;
-      }
-      return document === user.document && email === user.email;
+
+      return true;
     });
     return user || null;
   }

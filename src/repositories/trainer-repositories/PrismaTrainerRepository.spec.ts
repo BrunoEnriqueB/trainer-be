@@ -105,8 +105,7 @@ describe('Trainer Repository create method', () => {
       user_id: '1'
     };
 
-    prismaMock.users.findUnique.mockResolvedValue(user);
-    prismaMock.trainers.findUnique.mockResolvedValue(null);
+    prismaMock.$transaction.mockResolvedValue([user, null]);
     prismaMock.trainers.create.mockResolvedValue(trainer);
 
     expect(
@@ -130,7 +129,7 @@ describe('Trainer Repository create method', () => {
       user_id: '1'
     };
 
-    prismaMock.users.findUnique.mockResolvedValue(user);
+    prismaMock.$transaction.mockResolvedValue([user, trainer]);
     prismaMock.trainers.findUnique.mockResolvedValue(trainer);
 
     expect(
@@ -144,8 +143,7 @@ describe('Trainer Repository create method', () => {
       user_id: '1'
     };
 
-    prismaMock.users.findUnique.mockResolvedValue(null);
-    prismaMock.users.findUnique.mockResolvedValue(null);
+    prismaMock.$transaction.mockResolvedValue([null, null]);
 
     expect(
       prismaTrainerRepository.create(trainer.trainer_id)
@@ -178,9 +176,7 @@ describe('Trainer Repository assignStudent method', () => {
       created_at: new Date()
     };
 
-    prismaMock.trainers.findUnique.mockResolvedValue(trainer);
-    prismaMock.students.findUnique.mockResolvedValue(student);
-    prismaMock.trainer_Students.count.mockResolvedValue(0);
+    prismaMock.$transaction.mockResolvedValue([trainer, student, 0]);
     prismaMock.trainer_Students.create.mockResolvedValue(trainerXStudent);
 
     expect(
@@ -209,9 +205,7 @@ describe('Trainer Repository assignStudent method', () => {
       created_at: new Date()
     };
 
-    prismaMock.trainers.findUnique.mockResolvedValue(trainer);
-    prismaMock.students.findUnique.mockResolvedValue(student);
-    prismaMock.trainer_Students.count.mockResolvedValue(1);
+    prismaMock.$transaction.mockResolvedValue([trainer, student, 1]);
     prismaMock.trainer_Students.create.mockResolvedValue(trainerXStudent);
 
     expect(
@@ -233,8 +227,7 @@ describe('Trainer Repository assignStudent method', () => {
       user_id: '2'
     };
 
-    prismaMock.trainers.findUnique.mockResolvedValue(trainer);
-    prismaMock.students.findUnique.mockResolvedValue(null);
+    prismaMock.$transaction.mockResolvedValue([trainer, null, 0]);
     prismaMock.trainer_Students.count.mockResolvedValue(0);
 
     expect(
@@ -256,8 +249,7 @@ describe('Trainer Repository assignStudent method', () => {
       user_id: '2'
     };
 
-    prismaMock.trainers.findUnique.mockResolvedValue(null);
-    prismaMock.students.findUnique.mockResolvedValue(student);
+    prismaMock.$transaction.mockResolvedValue([null, student, 0]);
     prismaMock.trainer_Students.count.mockResolvedValue(0);
 
     expect(
@@ -328,6 +320,7 @@ describe('Trainer Repository getStudents method', () => {
       };
     });
 
+    prismaMock.trainers.findUnique.mockResolvedValue(trainer);
     prismaMock.students.findMany.mockResolvedValue(findUsers);
 
     expect(
@@ -344,6 +337,7 @@ describe('Trainer Repository getStudents method', () => {
       user_id: '1'
     };
 
+    prismaMock.trainers.findUnique.mockResolvedValue(trainer);
     prismaMock.students.findMany.mockResolvedValue([]);
 
     expect(
@@ -360,13 +354,11 @@ describe('Trainer Repository getStudents method', () => {
       user_id: '1'
     };
 
+    prismaMock.trainers.findUnique.mockResolvedValue(null);
     prismaMock.students.findMany.mockResolvedValue([]);
 
     expect(
       prismaTrainerRepository.getStudents(trainer.trainer_id)
-    ).resolves.toStrictEqual([]);
-    expect(
-      prismaTrainerRepository.getStudents(trainer.trainer_id)
-    ).resolves.toHaveLength(0);
+    ).rejects.toBeInstanceOf(TrainerNotFoundException);
   });
 });

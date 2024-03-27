@@ -4,7 +4,7 @@ export type UsersWithStudent = Users & {
   student_id: string;
 };
 
-export default interface ITrainerRepository {
+export interface ITrainerRepository {
   find(trainer_id: string): Promise<Trainers | null>;
 
   exists(trainer_id: string): Promise<boolean>;

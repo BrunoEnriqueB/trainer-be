@@ -6,10 +6,17 @@ import {
   Users
 } from '@prisma/client';
 import { InternalServerError } from '@src/domain/HttpErrors';
-import { StudentAlreadyAssignedException } from '@src/domain/StudentExceptions';
+import {
+  StudentAlreadyAssignedException,
+  StudentNotFoundException
+} from '@src/domain/StudentExceptions';
 import { prisma } from '@src/libs/client';
 import ITrainerRepository, { UsersWithStudent } from './TrainerRepository';
-import { TrainerAlreadyExistsException } from '@src/domain/TrainerExceptions';
+import {
+  TrainerAlreadyExistsException,
+  TrainerNotFoundException
+} from '@src/domain/TrainerExceptions';
+import { UserNotFoundException } from '@src/domain/UserExceptions';
 
 export type StudentWithUserData = Students & {
   userId: Users;
@@ -51,9 +58,20 @@ export default class PrismaTrainerRepository implements ITrainerRepository {
   create(user_id: string): Promise<Trainers> {
     return new Promise(async (resolve, reject) => {
       try {
-        const findTrainer = await prisma.trainers.findUnique({
-          where: { user_id }
-        });
+        const [findUser, findTrainer] = await prisma.$transaction([
+          prisma.users.findUnique({
+            where: {
+              id: user_id
+            }
+          }),
+          prisma.trainers.findUnique({
+            where: { user_id }
+          })
+        ]);
+
+        if (!findUser) {
+          return reject(new UserNotFoundException());
+        }
 
         if (findTrainer) {
           return reject(new TrainerAlreadyExistsException());
@@ -78,12 +96,33 @@ export default class PrismaTrainerRepository implements ITrainerRepository {
   ): Promise<Trainer_Students> {
     return new Promise(async (resolve, reject) => {
       try {
-        const countTrainerXStudent = await prisma.trainer_Students.count({
-          where: {
-            trainer_id,
-            student_id
-          }
-        });
+        const [findTrainer, findStudent, countTrainerXStudent] =
+          await prisma.$transaction([
+            prisma.trainers.findUnique({
+              where: {
+                trainer_id
+              }
+            }),
+            prisma.students.findUnique({
+              where: {
+                student_id
+              }
+            }),
+            prisma.trainer_Students.count({
+              where: {
+                trainer_id,
+                student_id
+              }
+            })
+          ]);
+
+        if (!findTrainer) {
+          return reject(new TrainerNotFoundException());
+        }
+
+        if (!findStudent) {
+          return reject(new StudentNotFoundException());
+        }
 
         if (countTrainerXStudent) {
           return reject(new StudentAlreadyAssignedException());
@@ -106,6 +145,16 @@ export default class PrismaTrainerRepository implements ITrainerRepository {
   getStudents(trainer_id: string): Promise<UsersWithStudent[]> {
     return new Promise(async (resolve, reject) => {
       try {
+        const findTrainer = await prisma.trainers.findUnique({
+          where: {
+            trainer_id
+          }
+        });
+
+        if (!findTrainer) {
+          return reject(new TrainerNotFoundException());
+        }
+
         const users: StudentWithUserData[] = await prisma.students.findMany({
           where: {
             Trainer_Students: {

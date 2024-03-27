@@ -1,23 +1,24 @@
-import { ZodError } from 'zod';
 import { NextFunction, Request, Response } from 'express';
+import { ZodError } from 'zod';
+
+import { AuthService } from '@src/services/AuthService';
+import { UserService } from '@src/services/UserService';
 
 import { HttpError } from '@src/domain/HttpErrors';
 
 import { user, userSign, userUniqueKeysPartial } from '@schemas/User';
 
-import AuthService from '@src/services/AuthService';
-import UserService from '@src/services/UserService';
-
 export default class AuthController {
-  static async signUp(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> {
+  constructor(
+    private authService: AuthService,
+    private userService: UserService
+  ) {}
+
+  async signUp(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userBody = user.parse(req.body);
 
-      await UserService.createUser(userBody);
+      await this.userService.create(userBody);
 
       res.status(201).json({ success: true });
     } catch (error) {
@@ -30,15 +31,11 @@ export default class AuthController {
     }
   }
 
-  static async signIn(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> {
+  async signIn(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const sign = userSign.parse(req.body);
 
-      const token = await AuthService.authUser(sign);
+      const token = await this.authService.authUser(sign);
 
       res.status(200).json({ success: true, token });
     } catch (error) {
@@ -51,15 +48,11 @@ export default class AuthController {
     }
   }
 
-  static async recoveryPassword(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) {
+  async recoveryPassword(req: Request, res: Response, next: NextFunction) {
     try {
       const userData = userUniqueKeysPartial.parse(req.body);
 
-      await AuthService.recoveryUserPassword(userData);
+      await this.authService.recoveryUserPassword(userData);
 
       res.status(200).json({ success: true });
     } catch (error) {

@@ -1,15 +1,26 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import InMemoryTrainerRepository from './InMemoryTrainerRepository';
+import { Students, Trainer_Students, Trainers, Users } from '@prisma/client';
+import {
+  StudentAlreadyAssignedException,
+  StudentNotFoundException
+} from '@src/domain/StudentExceptions';
+import {
+  TrainerAlreadyExistsException,
+  TrainerNotFoundException
+} from '@src/domain/TrainerExceptions';
 import { prisma as prismaMock } from '@src/libs/__mocks__/prisma';
 import {
-  Prisma,
-  Students,
-  Trainer_Students,
-  Trainers,
-  Users
-} from '@prisma/client';
-import { TrainerAlreadyExistsException } from '@src/domain/TrainerExceptions';
-import { StudentAlreadyAssignedException } from '@src/domain/StudentExceptions';
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi
+} from 'vitest';
+import InMemoryTrainerRepository, {
+  UsersAndStudentsRelation
+} from './InMemoryTrainerRepository';
+import { UserNotFoundException } from '@src/domain/UserExceptions';
 import { UsersWithStudent } from './TrainerRepository';
 
 describe('Trainer Repository find method', () => {
@@ -20,22 +31,20 @@ describe('Trainer Repository find method', () => {
   });
 
   it('should find a trainer', () => {
-    const trainer: Trainers = {
+    const trainer1: Trainers = {
       trainer_id: '1',
       user_id: '1'
     };
-
     const trainer2: Trainers = {
       trainer_id: '2',
       user_id: '2'
     };
 
-    inMemoryTrainerRepository.trainers.push(trainer);
-    inMemoryTrainerRepository.trainers.push(trainer2);
+    inMemoryTrainerRepository.trainers.push(trainer1, trainer2);
 
     expect(
-      inMemoryTrainerRepository.find(trainer.trainer_id)
-    ).resolves.toStrictEqual(trainer);
+      inMemoryTrainerRepository.find(trainer1.trainer_id)
+    ).resolves.toStrictEqual(trainer1);
     expect(inMemoryTrainerRepository.trainers).toHaveLength(2);
   });
 
@@ -45,9 +54,10 @@ describe('Trainer Repository find method', () => {
       user_id: '1'
     };
 
-    expect(
-      inMemoryTrainerRepository.find(trainer.trainer_id)
-    ).resolves.toBeNull();
+    inMemoryTrainerRepository.trainers.push(trainer);
+
+    expect(inMemoryTrainerRepository.find('2')).resolves.toBeNull();
+    expect(inMemoryTrainerRepository.trainers).toHaveLength(1);
   });
 });
 
@@ -69,54 +79,117 @@ describe('Trainer Repository exists method', () => {
     expect(
       inMemoryTrainerRepository.exists(trainer.trainer_id)
     ).resolves.toBeTruthy();
+    expect(inMemoryTrainerRepository.trainers).toHaveLength(1);
   });
 
   it('should NOT exists a trainer', () => {
-    const trainer: Trainers = {
+    const trainer1: Trainers = {
       trainer_id: '1',
       user_id: '1'
     };
+    const trainer2: Trainers = {
+      trainer_id: '2',
+      user_id: '2'
+    };
 
-    expect(
-      inMemoryTrainerRepository.exists(trainer.trainer_id)
-    ).resolves.toBeFalsy();
+    inMemoryTrainerRepository.trainers.push(trainer1, trainer2);
+
+    expect(inMemoryTrainerRepository.exists('3')).resolves.toBeFalsy();
+    expect(inMemoryTrainerRepository.trainers).toHaveLength(2);
   });
 });
 
 describe('Trainer Repository create method', () => {
   let inMemoryTrainerRepository: InMemoryTrainerRepository;
 
+  beforeAll(() => {
+    vi.mock('node:crypto', async (importOriginal) => {
+      return {
+        ...(await importOriginal<typeof import('crypto')>()),
+        randomUUID: () => '1'
+      };
+    });
+  });
+
+  afterAll(() => {
+    vi.resetAllMocks();
+  });
+
   beforeEach(() => {
     inMemoryTrainerRepository = new InMemoryTrainerRepository();
   });
 
   it('should create a trainer', () => {
-    const trainer: Trainers = {
-      trainer_id: '1',
-      user_id: '1'
+    const user: UsersAndStudentsRelation = {
+      id: '1',
+      document: '12345678911',
+      name: 'John Doe',
+      password: 'mypassword',
+      email: 'johndoe@gmai.com',
+      created_at: new Date(),
+      updated_at: new Date(),
+      Students: null
     };
 
+    const trainer: Trainers = {
+      trainer_id: '1',
+      user_id: user.id
+    };
+
+    inMemoryTrainerRepository.users.push(user);
+
     expect(
-      inMemoryTrainerRepository.create(trainer.trainer_id)
+      inMemoryTrainerRepository.create(trainer.user_id)
     ).resolves.toStrictEqual(trainer);
+    expect(inMemoryTrainerRepository.users).toHaveLength(1);
+    expect(inMemoryTrainerRepository.trainers).toHaveLength(1);
   });
 
   it('should throw user is already a trainer error', () => {
-    const trainer: Trainers = {
-      trainer_id: '1',
-      user_id: '1'
+    const user: UsersAndStudentsRelation = {
+      id: '1',
+      document: '12345678911',
+      name: 'John Doe',
+      password: 'mypassword',
+      email: 'johndoe@gmai.com',
+      created_at: new Date(),
+      updated_at: new Date(),
+      Students: null
     };
 
+    const trainer: Trainers = {
+      trainer_id: '1',
+      user_id: user.id
+    };
+
+    inMemoryTrainerRepository.users.push(user);
     inMemoryTrainerRepository.trainers.push(trainer);
 
     expect(
-      inMemoryTrainerRepository.create(trainer.trainer_id)
+      inMemoryTrainerRepository.create(trainer.user_id)
     ).rejects.toBeInstanceOf(TrainerAlreadyExistsException);
+  });
+
+  it('should throw user being assigned does not exists', () => {
+    expect(inMemoryTrainerRepository.create('1')).rejects.toBeInstanceOf(
+      UserNotFoundException
+    );
+    expect(inMemoryTrainerRepository.users).toHaveLength(0);
+    expect(inMemoryTrainerRepository.trainers).toHaveLength(0);
   });
 });
 
 describe('Trainer Repository assignStudent method', () => {
   let inMemoryTrainerRepository: InMemoryTrainerRepository;
+
+  beforeAll(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime('2024-02-03');
+  });
+
+  afterAll(() => {
+    vi.useRealTimers();
+  });
 
   beforeEach(() => {
     inMemoryTrainerRepository = new InMemoryTrainerRepository();
@@ -141,6 +214,7 @@ describe('Trainer Repository assignStudent method', () => {
     };
 
     inMemoryTrainerRepository.trainers.push(trainer);
+    inMemoryTrainerRepository.students.push(student);
 
     expect(
       inMemoryTrainerRepository.assignStudent(
@@ -148,9 +222,12 @@ describe('Trainer Repository assignStudent method', () => {
         student.student_id
       )
     ).resolves.toStrictEqual(trainerXStudent);
+    expect(inMemoryTrainerRepository.trainers).toHaveLength(1);
+    expect(inMemoryTrainerRepository.students).toHaveLength(1);
+    expect(inMemoryTrainerRepository.trainersXStudents).toHaveLength(1);
   });
 
-  it('should NOT assign a student to a trainer', () => {
+  it('should throw student already assign', () => {
     const trainer: Trainers = {
       trainer_id: '1',
       user_id: '1'
@@ -167,8 +244,10 @@ describe('Trainer Repository assignStudent method', () => {
       student_id: student.student_id,
       created_at: new Date()
     };
-    prismaMock.trainer_Students.count.mockResolvedValue(1);
-    prismaMock.trainer_Students.create.mockResolvedValue(trainerXStudent);
+
+    inMemoryTrainerRepository.trainers.push(trainer);
+    inMemoryTrainerRepository.students.push(student);
+    inMemoryTrainerRepository.trainersXStudents.push(trainerXStudent);
 
     expect(
       inMemoryTrainerRepository.assignStudent(
@@ -176,6 +255,55 @@ describe('Trainer Repository assignStudent method', () => {
         student.student_id
       )
     ).rejects.toBeInstanceOf(StudentAlreadyAssignedException);
+    expect(inMemoryTrainerRepository.trainers).toHaveLength(1);
+    expect(inMemoryTrainerRepository.students).toHaveLength(1);
+    expect(inMemoryTrainerRepository.trainersXStudents).toHaveLength(1);
+  });
+
+  it('should throw student beign assigned does not found', () => {
+    const trainer: Trainers = {
+      trainer_id: '1',
+      user_id: '1'
+    };
+
+    const student: Students = {
+      student_id: '1',
+      user_id: '2'
+    };
+
+    inMemoryTrainerRepository.trainers.push(trainer);
+
+    expect(
+      inMemoryTrainerRepository.assignStudent(
+        trainer.trainer_id,
+        student.student_id
+      )
+    ).rejects.toBeInstanceOf(StudentNotFoundException);
+    expect(inMemoryTrainerRepository.trainers).toHaveLength(1);
+    expect(inMemoryTrainerRepository.students).toHaveLength(0);
+    expect(inMemoryTrainerRepository.trainersXStudents).toHaveLength(0);
+  });
+
+  it('should throw trainer beign assigned does not found', () => {
+    const trainer: Trainers = {
+      trainer_id: '1',
+      user_id: '1'
+    };
+
+    const student: Students = {
+      student_id: '1',
+      user_id: '2'
+    };
+
+    expect(
+      inMemoryTrainerRepository.assignStudent(
+        trainer.trainer_id,
+        student.student_id
+      )
+    ).rejects.toBeInstanceOf(TrainerNotFoundException);
+    expect(inMemoryTrainerRepository.trainers).toHaveLength(0);
+    expect(inMemoryTrainerRepository.students).toHaveLength(0);
+    expect(inMemoryTrainerRepository.trainersXStudents).toHaveLength(0);
   });
 });
 
@@ -202,43 +330,56 @@ describe('Trainer Repository getStudents method', () => {
       user_id: '3'
     };
 
-    const userWithStudent: StudentWithUserData = {
-      userId: {
-        id: student.user_id,
-        document: '12345678910',
-        email: 'johndoe@gmail.com',
-        name: 'John Doe',
-        created_at: new Date(),
-        updated_at: new Date(),
-        password: 'mypassword'
-      },
-      ...student
+    const userWithStudent: UsersAndStudentsRelation = {
+      id: student.user_id,
+      document: '12345678910',
+      email: 'johndoe@gmail.com',
+      name: 'John Doe',
+      created_at: new Date(),
+      updated_at: new Date(),
+      password: 'mypassword',
+      Students: {
+        student_id: student.student_id,
+        user_id: student.user_id,
+        Trainers_Students: {
+          id: '1',
+          student_id: student.student_id,
+          created_at: new Date(),
+          trainer_id: trainer.trainer_id
+        }
+      }
     };
 
-    const userWithStudent2: StudentWithUserData = {
-      userId: {
-        id: student2.user_id,
-        document: '12345678911',
-        email: 'johndoe2@gmail.com',
-        name: 'John Doe Second',
-        created_at: new Date(),
-        updated_at: new Date(),
-        password: 'mypassword'
-      },
-      ...student2
+    const userWithStudent2: UsersAndStudentsRelation = {
+      id: student2.user_id,
+      document: '12345678911',
+      email: 'johndoe2@gmail.com',
+      name: 'John Doe Second',
+      created_at: new Date(),
+      updated_at: new Date(),
+      password: 'mypassword',
+      Students: {
+        student_id: student2.student_id,
+        user_id: student2.user_id,
+        Trainers_Students: {
+          id: '2',
+          student_id: student2.student_id,
+          created_at: new Date(),
+          trainer_id: trainer.trainer_id
+        }
+      }
     };
 
-    const findUsers = [userWithStudent, userWithStudent2];
+    inMemoryTrainerRepository.users.push(userWithStudent, userWithStudent2);
+    inMemoryTrainerRepository.trainers.push(trainer);
 
-    const parsedUsers = findUsers.map((user) => {
-      const { userId, ...restUser } = user;
+    const parsedUsers = [userWithStudent, userWithStudent2].map((user) => {
+      const { Students, ...restUser } = user;
       return {
-        student_id: restUser.student_id,
-        ...userId
+        student_id: Students!.student_id,
+        ...restUser
       };
     });
-
-    prismaMock.students.findMany.mockResolvedValue(findUsers);
 
     expect(
       inMemoryTrainerRepository.getStudents(trainer.trainer_id)
@@ -246,15 +387,17 @@ describe('Trainer Repository getStudents method', () => {
     expect(
       inMemoryTrainerRepository.getStudents(trainer.trainer_id)
     ).resolves.toHaveLength(2);
+    expect(inMemoryTrainerRepository.users).toHaveLength(2);
+    expect(inMemoryTrainerRepository.trainers).toHaveLength(1);
   });
 
-  it('should bring any students from a trainer', () => {
+  it('should bring 0 students from a trainer', () => {
     const trainer: Trainers = {
       trainer_id: '1',
       user_id: '1'
     };
 
-    prismaMock.students.findMany.mockResolvedValue([]);
+    inMemoryTrainerRepository.trainers.push(trainer);
 
     expect(
       inMemoryTrainerRepository.getStudents(trainer.trainer_id)
@@ -262,5 +405,18 @@ describe('Trainer Repository getStudents method', () => {
     expect(
       inMemoryTrainerRepository.getStudents(trainer.trainer_id)
     ).resolves.toHaveLength(0);
+    expect(inMemoryTrainerRepository.trainers).toHaveLength(1);
+    expect(inMemoryTrainerRepository.users).toHaveLength(0);
+  });
+
+  it('should throw trainer does not found', () => {
+    const trainer: Trainers = {
+      trainer_id: '1',
+      user_id: '1'
+    };
+
+    expect(
+      inMemoryTrainerRepository.getStudents(trainer.trainer_id)
+    ).rejects.toBeInstanceOf(TrainerNotFoundException);
   });
 });

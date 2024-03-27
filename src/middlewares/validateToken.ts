@@ -2,9 +2,10 @@ import { NextFunction, Request, Response } from 'express';
 
 import Token from '@src/libs/token';
 
-import AuthService from '@src/services/AuthService';
+import { AuthService } from '@src/services/AuthService';
 
 import { HttpError } from '@src/domain/HttpErrors';
+import PrismaUserRepository from '@src/repositories/user-repositories/PrismaUserRepository';
 
 export default async function validateUser(
   req: Request,
@@ -22,7 +23,8 @@ export default async function validateUser(
 
     const { iat, id } = await Token.getUserInToken(token);
 
-    const user = await AuthService.validateUser(id);
+    const authService = new AuthService(new PrismaUserRepository());
+    const user = await authService.validateUser(id);
 
     req.user = user;
 
