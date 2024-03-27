@@ -14,14 +14,13 @@ const workout = z.object({
     .regex(/^[aA-zZ ]*$/gi)
     .max(60, { message: 'Name must have a maximum of 60 characters' }),
   description,
-  schedule_description: z
-    .string({
-      required_error: 'Missing field: schedule_description',
-      invalid_type_error: 'schedule_description must be a string'
+  schedule: z
+    .number({
+      required_error: 'Missing field: schedule',
+      invalid_type_error: 'schedule must be a number'
     })
-    .trim()
     .max(200, {
-      message: 'schedule_description must have a maximum of 200 characters'
+      message: 'schedule must have a maximum of 200 characters'
     }),
 
   student_id: z

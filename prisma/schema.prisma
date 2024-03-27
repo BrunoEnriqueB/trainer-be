@@ -70,7 +70,7 @@ model Workouts {
   id                   Int                 @id @default(autoincrement())
   name                 String              @db.VarChar(60)
   description          String              @db.VarChar(500)
-  schedule_description String              @db.VarChar(200)
+  schedule             Int[]              
   logo_url             String              @db.VarChar(255)
   trainerId            Trainers            @relation(fields: [trainer_id], references: [trainer_id])
   studentId            Students            @relation(fields: [student_id], references: [student_id])
