@@ -16,7 +16,8 @@
       "@src/*": ["./src/*"],
       "@routes/*": ["./src/routes/*"],
       "@schemas/*": ["./src/schemas/*"]
-    }
+    },
+    "types": ["node"]
   },
 
   "ts-node": {
