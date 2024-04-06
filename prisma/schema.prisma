@@ -35,12 +35,12 @@ model Trainers {
 }
 
 model Students {
-  student_id       String             @id @default(uuid())
-  userId           Users              @relation(fields: [user_id], references: [id])
-  user_id          String             @unique
-  Trainer_Students Trainer_Students[]
-  Workouts         Workouts[]
-  Workout_Tracker  Workout_Tracker[]
+  student_id        String              @id @default(uuid())
+  userId            Users               @relation(fields: [user_id], references: [id])
+  user_id           String              @unique
+  Trainer_Students  Trainer_Students[]
+  Workout_Tracker   Workout_Tracker[]
+  Workouts_Students Workouts_Students[]
 }
 
 model Trainer_Students {
@@ -67,20 +67,29 @@ model Exercises {
 }
 
 model Workouts {
-  id                   Int                 @id @default(autoincrement())
-  name                 String              @db.VarChar(60)
-  description          String              @db.VarChar(500)
-  schedule             Int[]              
-  logo_url             String              @db.VarChar(255)
-  trainerId            Trainers            @relation(fields: [trainer_id], references: [trainer_id])
-  studentId            Students            @relation(fields: [student_id], references: [student_id])
-  trainer_id           String
-  student_id           String
-  created_at           DateTime            @default(now()) @db.Timestamptz()
-  updated_at           DateTime            @default(now()) @updatedAt @db.Timestamptz()
-  Workout_Exercices    Workout_Exercices[]
+  id                Int                 @id @default(autoincrement())
+  name              String              @db.VarChar(60)
+  description       String              @db.VarChar(500)
+  logo_url          String              @db.VarChar(255)
+  trainerId         Trainers            @relation(fields: [trainer_id], references: [trainer_id])
+  trainer_id        String
+  created_at        DateTime            @default(now()) @db.Timestamptz()
+  updated_at        DateTime            @default(now()) @updatedAt @db.Timestamptz()
+  Workout_Exercices Workout_Exercices[]
+  Workouts_Students Workouts_Students[]
 
   @@unique([trainer_id, name])
+}
+
+model Workouts_Students {
+  id         Int      @id @default(autoincrement())
+  workout_id Int
+  student_id String
+  schedule   Int[]
+  Workout    Workouts @relation(fields: [workout_id], references: [id])
+  Student    Students @relation(fields: [student_id], references: [student_id])
+
+  @@unique([workout_id, student_id])
 }
 
 model Workout_Exercices {
