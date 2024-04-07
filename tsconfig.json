@@ -1,28 +1,26 @@
 {
   "compilerOptions": {
-    "target": "ES6" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
-    "module": "CommonJS" /* Specify what module code is generated. */,
-    "rootDir": "./" /* Specify the root folder within your source files. */,
-    "outDir": "./build" /* Specify an output folder for all emitted files. */,
-    "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,
-    "strict": true /* Enable all strict type-checking options. */,
-    "esModuleInterop": true,
     "declaration": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "CommonJS",
     "moduleResolution": "node",
-    "strictNullChecks": true,
-    "skipLibCheck": true,
-    "typeRoots": ["./src/@types"],
+    "outDir": "./build",
     "paths": {
-      "@src/*": ["./src/*"],
       "@routes/*": ["./src/routes/*"],
-      "@schemas/*": ["./src/schemas/*"]
+      "@schemas/*": ["./src/schemas/*"],
+      "@src/*": ["./src/*"]
     },
-    "types": ["node"]
+    "baseUrl": ".",
+    "skipLibCheck": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "target": "ES6",
+    "typeRoots": ["./src/@types"]
   },
-
+  "exclude": ["node_modules", "src/**/*.spec.ts"],
+  "include": ["src/**/*", "./node_modules/@types"],
   "ts-node": {
     "require": ["tsconfig-paths/register"]
-  },
-  "include": ["src/**/*", "./node_modules/@types"],
-  "exclude": ["node_modules", "src/**/*.spec.ts"]
+  }
 }
