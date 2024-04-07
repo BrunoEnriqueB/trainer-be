@@ -5,9 +5,9 @@
   "main": "index.ts",
   "scripts": {
     "start": "npx prisma db push && nodemon --exec 'node --inspect=0.0.0.0:9229 --require ts-node/register src/index.ts'",
-    "prettier-format": "prettier --config .prettierrc ./src/*.ts ./src/**/*.ts --write",
+    "prettier-format": "npx prettier --config .prettierrc ./src/*.ts ./src/**/*.ts --write",
     "dev:docker": "docker-compose up --build",
-    "seed:test": "npx prisma migrate reset -f && NODE_ENV=test npx ts-node prisma/seed.ts",
+    "seed:test": "npx prisma migrate reset -f && NODE_ENV=test npx ts-node --project tsconfig-dev.json prisma/seed.ts",
     "build": "npm run prettier-format && tsc --build"
   },
   "author": "Bruno Enrique",
