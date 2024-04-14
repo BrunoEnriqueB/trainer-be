@@ -1,6 +1,5 @@
+import ACCEPTED_MIME_TYPES from '@src/global/accepted_mime_types';
 import { z } from 'zod';
-
-const ACCEPTED_MIME_TYPES = ['image/jpeg', 'image/png', 'video/mp4', 'video/quicktime'];
 
 const email = z
   .string({
@@ -109,19 +108,29 @@ const id = z
     { message: 'Id must be a positive number' }
   );
 
+const student_id = z
+  .string({
+    required_error: 'Missing field: student_id',
+    invalid_type_error: 'student_id must be a string'
+  })
+  .uuid({
+    message: 'student_id must have an uuid pattern'
+  });
+
 const uuid = z.string().uuid();
 
 type uuidType = z.infer<typeof uuid>;
 
 export {
-  name,
-  email,
   description,
-  uuid,
-  video,
-  id,
-  uuidType,
   document,
+  email,
+  id,
+  name,
   password,
-  userId
+  student_id,
+  userId,
+  uuid,
+  uuidType,
+  video
 };

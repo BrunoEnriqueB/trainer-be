@@ -17,3 +17,14 @@ export class ExerciseAlreadyExistsException<T> extends ExerciseException<T> {
     super(422, 'You have already registered an exercise with this name');
   }
 }
+
+export class ExercisesNotAssignedWithThisTrainer<
+  T
+> extends ExerciseException<T> {
+  constructor(exercises: number[]) {
+    super(
+      400,
+      `The exercises: [${exercises}] are not exercises from this trainer`
+    );
+  }
+}

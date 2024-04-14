@@ -1,14 +1,12 @@
-import fs from 'fs';
 import { NextFunction, Request, Response } from 'express';
 import { ZodError } from 'zod';
 
 import { HttpError } from '@src/domain/HttpErrors';
 
 import { exerciseBody, exercisesFilters } from '@src/schemas/Exercise';
+import { id } from '@src/schemas/Generic';
 import AWSServices from '@src/services/AWSServices';
 import ExerciseService from '@src/services/ExercisesService';
-import { id } from '@src/schemas/Generic';
-import { ExerciseAlreadyExistsException } from '@src/domain/ExerciseExceptions';
 
 export default class ExercisesController {
   static async create(req: Request, res: Response, next: NextFunction) {

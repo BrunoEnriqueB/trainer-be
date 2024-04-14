@@ -1,6 +1,6 @@
+import { AWSDeleteImage, AWSUploadImage } from '@src/domain/AWSException';
 import AWS, { S3 } from 'aws-sdk';
 import { ManagedUpload } from 'aws-sdk/clients/s3';
-import { AWSDeleteImage, AWSUploadImage } from '@src/domain/AWSException';
 
 export default class AwsServices {
   private client: S3;
@@ -39,8 +39,8 @@ export default class AwsServices {
     });
   }
 
-  private convertContentTypeByMimetype(mimetype: string){
-    return mimetype === "video/quicktime" ? "video/mp4" : mimetype
+  private convertContentTypeByMimetype(mimetype: string) {
+    return mimetype === 'video/quicktime' ? 'video/mp4' : mimetype;
   }
 
   async deleteFile(fileName: string): Promise<void> {

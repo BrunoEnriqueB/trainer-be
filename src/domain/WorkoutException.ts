@@ -17,3 +17,11 @@ export class WorkoutAlreadyExistsException<T> extends WorkoutException<T> {
     super(422, 'You have already registered an workout with this name');
   }
 }
+
+export class WorkoutDoesNotRelationedWithThisTrainer<
+  T
+> extends WorkoutException<T> {
+  constructor() {
+    super(401, 'This workout is not owned by this trainer');
+  }
+}

@@ -23,3 +23,12 @@ export class StudentAlreadyAssignedException<T> extends StudentException<T> {
     super(400, 'This student is already assigned to this trainer');
   }
 }
+
+export class StudentsNotAssignedWithThisTrainer<T> extends StudentException<T> {
+  constructor(studentsId: string[]) {
+    super(
+      400,
+      `The students: [${studentsId}] are not students from this trainer`
+    );
+  }
+}
