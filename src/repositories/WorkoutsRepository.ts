@@ -13,8 +13,13 @@ import {
 } from '@src/domain/WorkoutException';
 import { DateUtils } from '@src/utils/date';
 
-export type TWorkoutAndExercises = Workouts & {
+export type TWorkoutAndExercisesAndStudents = Workouts & {
   exercises: Exercises[];
+  students: {
+    id: string;
+    name: string;
+    student_id: string;
+  }[];
 };
 
 export type TCreateWorkoutArgs = {
@@ -136,13 +141,23 @@ export default class WorkoutRepository {
     }
   }
 
-  static async findById(id: number): Promise<TWorkoutAndExercises> {
+  //TODO: adicionar retorno de estudantes do treino também
+  static async findById(id: number): Promise<TWorkoutAndExercisesAndStudents> {
     {
       return new Promise(async (resolve, reject) => {
         try {
           const workout = await prisma.workouts.findUnique({
             where: { id },
             include: {
+              Workouts_Students: {
+                include: {
+                  Student: {
+                    include: {
+                      userId: true
+                    }
+                  }
+                }
+              },
               Workout_Exercices: {
                 include: {
                   exerciseId: true
@@ -155,7 +170,7 @@ export default class WorkoutRepository {
             return reject(new WorkoutNotFoundException());
           }
 
-          const response: TWorkoutAndExercises = {
+          const response: TWorkoutAndExercisesAndStudents = {
             id: workout.id,
             name: workout.name,
             description: workout.description,
@@ -163,7 +178,14 @@ export default class WorkoutRepository {
             logo_url: workout.logo_url,
             created_at: workout.created_at,
             updated_at: workout.updated_at,
-            exercises: workout.Workout_Exercices.map((we) => we.exerciseId)
+            exercises: workout.Workout_Exercices.map((we) => we.exerciseId),
+            students: workout.Workouts_Students.map(({ Student }) => {
+              return {
+                id: Student.userId.id,
+                name: Student.userId.name,
+                student_id: Student.student_id
+              };
+            })
           };
 
           resolve(response);

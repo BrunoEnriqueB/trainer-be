@@ -6,6 +6,7 @@ import {
 } from '@src/domain/WorkoutException';
 import {
   TCreateWorkoutArgs,
+  TWorkoutAndExercisesAndStudents,
   TWorkoutXStudentsArgs,
   default as WorkoutsRepository
 } from '@src/repositories/WorkoutsRepository';
@@ -79,7 +80,9 @@ export default class WorkoutService {
     }
   }
 
-  static async findById(workout_id: number): Promise<Workouts> {
+  static async findById(
+    workout_id: number
+  ): Promise<TWorkoutAndExercisesAndStudents> {
     try {
       const workout = await WorkoutsRepository.findById(workout_id);
 
