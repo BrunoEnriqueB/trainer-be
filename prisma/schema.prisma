@@ -90,15 +90,17 @@ model Workouts_Students {
   Student    Students @relation(fields: [student_id], references: [student_id])
 
   @@unique([workout_id, student_id])
+  @@map("workoutxstudents")
 }
 
 model Workout_Exercices {
   id          Int       @id @default(autoincrement())
   workoutId   Workouts  @relation(fields: [workout_id], references: [id])
-  exercideId  Exercises @relation(fields: [exercise_id], references: [id])
+  exerciseId  Exercises @relation(fields: [exercise_id], references: [id])
   exercise_id Int
   workout_id  Int
 
+  @@unique([workout_id, exercise_id])
   @@map("workoutxexercise")
 }
 
