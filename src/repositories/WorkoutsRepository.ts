@@ -130,7 +130,12 @@ export default class WorkoutRepository {
           }
 
           const workouts = await prisma.workouts.findMany({
-            where
+            where,
+            orderBy: [
+              {
+                created_at: 'desc'
+              }
+            ]
           });
 
           resolve(workouts);
