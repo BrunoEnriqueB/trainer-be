@@ -35,9 +35,9 @@ export default class WorkoutService {
   static async create(
     trainer_id: string,
     workout: TCreateWorkoutArgs
-  ): Promise<void> {
+  ): Promise<Workouts> {
     try {
-      await WorkoutsRepository.create(trainer_id, workout);
+      return await WorkoutsRepository.create(trainer_id, workout);
     } catch (error) {
       if (error instanceof WorkoutAlreadyExistsException) {
         const awsServices = new AwsServices();

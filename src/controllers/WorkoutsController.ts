@@ -22,14 +22,14 @@ export default class WorkoutsController {
       const uploadImage = await AwsServices.uploadFile(workout.logo);
       const trainer = req.trainer!;
 
-      await WorkoutsService.create(trainer.trainer_id, {
+      const workoutCreated = await WorkoutsService.create(trainer.trainer_id, {
         name: workout.name,
         description: workout.description,
         logo_url: uploadImage.Location,
         video_name: uploadImage.Key
       });
 
-      res.status(201).json({ success: true });
+      res.status(201).json({ success: true, id: workoutCreated.id });
     } catch (error) {
       if (error instanceof ZodError) {
         const zodError = error as ZodError;
