@@ -126,7 +126,6 @@ async function testSeed() {
 
   const exercises = [
     {
-      id: 1,
       name: 'Supino reto Bruno Enrique',
       description: 'Supino reto exercício para peito',
       trainer_id: trainers[0].trainer_id,
@@ -134,7 +133,6 @@ async function testSeed() {
         'https://www.youtube.com/watch?v=sqOw2Y6uDWQ&pp=ygUTc3VwaW5vIHJldG8gbGVhbmRybw%3D%3D'
     },
     {
-      id: 2,
       name: 'Supino inclinado Bruno Enrique',
       description: 'Supino inclinado exercício para peito',
       trainer_id: trainers[0].trainer_id,
@@ -142,7 +140,6 @@ async function testSeed() {
         'https://www.youtube.com/watch?v=WP1VLAt8hbM&pp=ygUYc3VwaW5vIGluY2xpbmFkbyBsZWFuZHJv'
     },
     {
-      id: 3,
       name: 'Supino reto Treinador A',
       description: 'Supino reto exercício para peito',
       trainer_id: trainers[1].trainer_id,
@@ -150,7 +147,6 @@ async function testSeed() {
         'https://www.youtube.com/watch?v=sqOw2Y6uDWQ&pp=ygUTc3VwaW5vIHJldG8gbGVhbmRybw%3D%3D'
     },
     {
-      id: 4,
       name: 'Supino inclinado Treinador B',
       description: 'Supino inclinado exercício para peito',
       trainer_id: trainers[2].trainer_id,
@@ -169,42 +165,36 @@ async function testSeed() {
 
   const workotus = [
     {
-      id: 1,
       name: 'Treino A (Superiores)',
       description: 'Esse treino tem como foco partes superiores do corpo',
       logo_url: 'https://i.ytimg.com/vi/kCSps1nPg6o/maxresdefault.jpg',
       trainer_id: trainers[0].trainer_id
     },
     {
-      id: 2,
       name: 'Treino B (Inferiores)',
       description: 'Esse treino tem como foco partes inferiores do corpo',
       logo_url: 'https://i.ytimg.com/vi/rmz2FX2rdnY/maxresdefault.jpg',
       trainer_id: trainers[0].trainer_id
     },
     {
-      id: 3,
       name: 'Treino A (Superiores)',
       description: 'Esse treino tem como foco partes superiores do corpo',
       logo_url: 'https://i.ytimg.com/vi/kCSps1nPg6o/maxresdefault.jpg',
       trainer_id: trainers[1].trainer_id
     },
     {
-      id: 4,
       name: 'Treino B (Inferiores)',
       description: 'Esse treino tem como foco partes inferiores do corpo',
       logo_url: 'https://i.ytimg.com/vi/rmz2FX2rdnY/maxresdefault.jpg',
       trainer_id: trainers[1].trainer_id
     },
     {
-      id: 5,
       name: 'Treino A (Superiores)',
       description: 'Esse treino tem como foco partes superiores do corpo',
       logo_url: 'https://i.ytimg.com/vi/kCSps1nPg6o/maxresdefault.jpg',
       trainer_id: trainers[2].trainer_id
     },
     {
-      id: 6,
       name: 'Treino B (Inferiores)',
       description: 'Esse treino tem como foco partes inferiores do corpo',
       logo_url: 'https://i.ytimg.com/vi/rmz2FX2rdnY/maxresdefault.jpg',

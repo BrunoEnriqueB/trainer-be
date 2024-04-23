@@ -9,8 +9,9 @@ export default class AwsServices {
   private AWS_REGION = process.env.AWS_REGION as string;
   private BUCKETNAME = process.env.BUCKETNAME as string;
   private CLOUDFRONTURL = process.env.CLOUDFRONTURL as string;
+  private static instance: AwsServices;
 
-  constructor() {
+  private constructor() {
     AWS.config.update({
       accessKeyId: this.AWS_ACCESS_KEY_ID,
       secretAccessKey: this.AWS_SECRET_ACCESS_KEY,
@@ -18,6 +19,15 @@ export default class AwsServices {
     });
 
     this.client = new AWS.S3();
+  }
+
+  static getInstance() {
+    if (this.instance) {
+      return this.instance;
+    }
+
+    this.instance = new AwsServices();
+    return this.instance;
   }
 
   async uploadFile(file: Express.Multer.File): Promise<ManagedUpload.SendData> {

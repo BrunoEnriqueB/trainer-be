@@ -10,14 +10,14 @@ import ExerciseService from '@src/services/ExercisesService';
 
 export default class ExercisesController {
   static async create(req: Request, res: Response, next: NextFunction) {
-    const exercise = exerciseBody.parse({ ...req.body, video: req.file });
     try {
-      const AwsServices = new AWSServices();
+      const exercise = exerciseBody.parse({ ...req.body, video: req.file });
+      const awsServices = AWSServices.getInstance();
 
-      const uploadImage = await AwsServices.uploadFile(exercise.video);
+      const uploadImage = await awsServices.uploadFile(exercise.video);
       const trainer = req.trainer!;
 
-      await ExerciseService.create(
+      const newExercise = await ExerciseService.create(
         {
           name: exercise.name,
           description: exercise.description,
@@ -27,7 +27,7 @@ export default class ExercisesController {
         trainer
       );
 
-      res.status(201).json({ success: true });
+      res.status(201).json({ success: true, exercise: newExercise });
     } catch (error) {
       if (error instanceof ZodError) {
         const zodError = error as ZodError;

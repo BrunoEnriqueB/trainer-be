@@ -7,13 +7,13 @@ import ExercisesRepository from '@src/repositories/ExercisesRepository';
 import TrainerRepository from '@src/repositories/TrainerRepository';
 
 import { ExercisesFilterType, NewExerciseType } from '@src/schemas/Exercise';
-import AWSServices from './AWSServices';
+import AWSServices from '@src/services/AWSServices';
 
 export default class ExerciseService {
   static async create(
     newExercise: NewExerciseType,
     trainer: Trainers
-  ): Promise<void> {
+  ): Promise<Exercises> {
     try {
       const trainerExists = await TrainerRepository.trainerExists(
         trainer.trainer_id
@@ -23,10 +23,15 @@ export default class ExerciseService {
         throw new TrainerNotFoundException();
       }
 
-      await ExercisesRepository.create(newExercise, trainer.trainer_id);
+      const exercise = await ExercisesRepository.create(
+        newExercise,
+        trainer.trainer_id
+      );
+
+      return exercise;
     } catch (error) {
       if (error instanceof ExerciseAlreadyExistsException) {
-        const awsServices = new AWSServices();
+        const awsServices = AWSServices.getInstance();
 
         await awsServices.deleteFile(newExercise.video_name);
       }

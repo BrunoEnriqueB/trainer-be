@@ -17,9 +17,9 @@ export default class WorkoutsController {
   static async create(req: Request, res: Response, next: NextFunction) {
     try {
       const workout = createWorkoutBody.parse({ ...req.body, logo: req.file });
-      const AwsServices = new AWSServices();
+      const awsServices = AWSServices.getInstance();
 
-      const uploadImage = await AwsServices.uploadFile(workout.logo);
+      const uploadImage = await awsServices.uploadFile(workout.logo);
       const trainer = req.trainer!;
 
       const workoutCreated = await WorkoutsService.create(trainer.trainer_id, {

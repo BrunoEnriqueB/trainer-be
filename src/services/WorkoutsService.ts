@@ -40,7 +40,7 @@ export default class WorkoutService {
       return await WorkoutsRepository.create(trainer_id, workout);
     } catch (error) {
       if (error instanceof WorkoutAlreadyExistsException) {
-        const awsServices = new AwsServices();
+        const awsServices = AwsServices.getInstance();
 
         await awsServices.deleteFile(workout.video_name);
       }
