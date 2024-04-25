@@ -1,6 +1,8 @@
-import UserRepository from '@src/repositories/UsersRepository';
-import TrainerRepository from '@src/repositories/TrainerRepository';
 import StudentRepository from '@src/repositories/StudentRepository';
+import TrainerRepository, {
+  PublicUser
+} from '@src/repositories/TrainerRepository';
+import UserRepository from '@src/repositories/UsersRepository';
 
 import { Trainers } from '@prisma/client';
 
@@ -71,7 +73,7 @@ export default class TrainerService {
     }
   }
 
-  static async getStudents(trainer_id: uuidType): Promise<publicUser[]> {
+  static async getStudents(trainer_id: uuidType): Promise<PublicUser[]> {
     try {
       const students = await TrainerRepository.getStudents(trainer_id);
 

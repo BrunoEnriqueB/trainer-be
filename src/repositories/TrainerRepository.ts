@@ -2,19 +2,26 @@ import prisma from '@src/config/client';
 
 import { Trainer_Students, Trainers, Users } from '@prisma/client';
 
-import { UserNotFoundException } from '@src/domain/UserExceptions';
-import { StudentAlreadyAssignedException } from '@src/domain/StudentExceptions';
 import { InternalServerError } from '@src/domain/HttpErrors';
+import { StudentAlreadyAssignedException } from '@src/domain/StudentExceptions';
 import {
   TrainerAlreadyExistsException,
   TrainerNotFoundException
 } from '@src/domain/TrainerExceptions';
+import { UserNotFoundException } from '@src/domain/UserExceptions';
 
-import { uuidType } from '@src/schemas/Generic';
-import { UserUniqueKeysPartialType } from '@src/schemas/User';
 import { TrainerUniqueKeysType } from '@src/schemas/Trainer';
+import { UserUniqueKeysPartialType } from '@src/schemas/User';
 
-import { publicUser } from '@src/@types/user';
+export type PublicUser = {
+  id: string;
+  student_id: string;
+  name: string;
+  document: string;
+  email: string;
+  created_at: Date;
+  updated_at: Date;
+};
 
 export default class TrainerRepository {
   static getTrainerByUserOrThrow(
@@ -70,7 +77,7 @@ export default class TrainerRepository {
     });
   }
 
-  static trainerExists(trainer_id: uuidType): Promise<boolean> {
+  static trainerExists(trainer_id: string): Promise<boolean> {
     return new Promise(async (resolve, reject) => {
       try {
         const trainer = await prisma.trainers.findUnique({
@@ -84,7 +91,7 @@ export default class TrainerRepository {
     });
   }
 
-  static insertTrainer(user_id: uuidType): Promise<Trainers> {
+  static insertTrainer(user_id: string): Promise<Trainers> {
     return new Promise(async (resolve, reject) => {
       try {
         const findTrainer = await prisma.trainers.findUnique({
@@ -105,8 +112,8 @@ export default class TrainerRepository {
   }
 
   static assignStudent(
-    trainer_id: uuidType,
-    student_id: uuidType
+    trainer_id: string,
+    student_id: string
   ): Promise<Trainer_Students> {
     return new Promise(async (resolve, reject) => {
       try {
@@ -129,10 +136,11 @@ export default class TrainerRepository {
     });
   }
 
-  static getStudents(trainer_id: uuidType): Promise<publicUser[]> {
+  static getStudents(trainer_id: string): Promise<PublicUser[]> {
     return new Promise(async (resolve, reject) => {
       try {
-        const students = await prisma.$queryRaw<publicUser[]>`SELECT u.id id, 
+        const students = await prisma.$queryRaw<PublicUser[]>`SELECT u.id id, 
+                s.student_id student_id,
                 u.name name, 
                 u.document document, 
                 u.email email, 
