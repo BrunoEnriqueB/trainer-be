@@ -13,20 +13,18 @@ import { UserNotFoundException } from '@src/domain/UserExceptions';
 import { TrainerUniqueKeysType } from '@src/schemas/Trainer';
 import { UserUniqueKeysPartialType } from '@src/schemas/User';
 
-export type PublicUser = {
-  id: string;
+export type PublicStudent = Omit<Users, 'password'> & {
   student_id: string;
-  name: string;
-  document: string;
-  email: string;
-  created_at: Date;
-  updated_at: Date;
+};
+
+export type PublicTrainer = Omit<Users, 'password'> & {
+  trainer_id: string;
 };
 
 export default class TrainerRepository {
   static getTrainerByUserOrThrow(
     userUniqueKeys: TrainerUniqueKeysType
-  ): Promise<Users & Trainers> {
+  ): Promise<PublicTrainer> {
     return new Promise(async (resolve, reject) => {
       try {
         const user = await prisma.users.findUnique({
@@ -44,9 +42,17 @@ export default class TrainerRepository {
           return reject(new TrainerNotFoundException());
         }
 
-        let { Trainers, ...restUser } = user;
+        const trainer: PublicTrainer = {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          document: user.document,
+          created_at: user.created_at,
+          updated_at: user.updated_at,
+          trainer_id: user.Trainers.trainer_id
+        };
 
-        resolve({ ...restUser, ...Trainers });
+        resolve(trainer);
       } catch (error) {
         return reject(new InternalServerError());
       }
@@ -136,10 +142,12 @@ export default class TrainerRepository {
     });
   }
 
-  static getStudents(trainer_id: string): Promise<PublicUser[]> {
+  static getStudents(trainer_id: string): Promise<PublicStudent[]> {
     return new Promise(async (resolve, reject) => {
       try {
-        const students = await prisma.$queryRaw<PublicUser[]>`SELECT u.id id, 
+        const students = await prisma.$queryRaw<
+          PublicStudent[]
+        >`SELECT u.id id, 
                 s.student_id student_id,
                 u.name name, 
                 u.document document, 

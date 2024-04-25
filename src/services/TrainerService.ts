@@ -1,6 +1,7 @@
 import StudentRepository from '@src/repositories/StudentRepository';
 import TrainerRepository, {
-  PublicUser
+  PublicStudent,
+  PublicTrainer
 } from '@src/repositories/TrainerRepository';
 import UserRepository from '@src/repositories/UsersRepository';
 
@@ -15,15 +16,14 @@ import { uuidType } from '@src/schemas/Generic';
 import { TrainerUniqueKeysType } from '@src/schemas/Trainer';
 import { UserUniqueKeysPartialType } from '@src/schemas/User';
 
-import { publicUser } from '@src/@types/user';
-
 export default class TrainerService {
   static async getTrainer(
     trainer: TrainerUniqueKeysType
-  ): Promise<publicUser & Trainers> {
+  ): Promise<PublicTrainer> {
     try {
-      const { password, ...trainerData } =
-        await TrainerRepository.getTrainerByUserOrThrow(trainer);
+      const trainerData = await TrainerRepository.getTrainerByUserOrThrow(
+        trainer
+      );
 
       return trainerData;
     } catch (error) {
@@ -73,7 +73,7 @@ export default class TrainerService {
     }
   }
 
-  static async getStudents(trainer_id: uuidType): Promise<PublicUser[]> {
+  static async getStudents(trainer_id: uuidType): Promise<PublicStudent[]> {
     try {
       const students = await TrainerRepository.getStudents(trainer_id);
 
