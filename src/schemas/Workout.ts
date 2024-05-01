@@ -80,9 +80,45 @@ const workoutFilters = z.object({
     })
     .max(60, { message: 'Name must have a maximum of 60 characters' })
     .optional(),
-  trainer_id: trainerId.optional(),
-  student_id: student_id.optional(),
+  trainers: z.array(trainerId).optional(),
+  students: z.array(student_id).optional(),
+  exercises: z
+    .array(z.string())
+    .superRefine((data: string[], ctx: z.RefinementCtx) => {
+      for (const value of data) {
+        if (isNaN(Number(value))) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.invalid_type,
+            expected: 'number',
+            received: 'string',
+            message: 'exercises must be an array of integer'
+          });
+        }
+      }
+    })
+    .transform((data) => {
+      return data.map((value) => Number(value));
+    })
+    .optional(),
   id: id.transform((val) => Number(val)).optional(),
+  scheduledAt: z
+    .array(z.string())
+    .superRefine((data: string[], ctx: z.RefinementCtx) => {
+      for (const value of data) {
+        if (isNaN(Number(value))) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.invalid_type,
+            expected: 'number',
+            received: 'string',
+            message: 'scheduledAt must be an array of integer'
+          });
+        }
+      }
+    })
+    .transform((data) => {
+      return data.map((value) => Number(value));
+    })
+    .optional(),
   startsAt: z
     .string({
       required_error: 'Missing field: startAt',

@@ -5,6 +5,7 @@ import {
   WorkoutDoesNotRelationedWithThisTrainer
 } from '@src/domain/WorkoutException';
 import {
+  ListedWorkouts,
   TCreateWorkoutArgs,
   TWorkoutAndExercisesAndStudents,
   TWorkoutXStudentsArgs,
@@ -48,7 +49,7 @@ export default class WorkoutService {
     }
   }
 
-  static async list(filters: WorkoutFiltersType): Promise<Workouts[]> {
+  static async list(filters: WorkoutFiltersType): Promise<ListedWorkouts[]> {
     try {
       if (
         filters.startsAt &&
@@ -65,11 +66,13 @@ export default class WorkoutService {
         ? new DateUtils(filters.endsAt).endOf('day')
         : undefined;
 
-      const workouts: Workouts[] = await WorkoutsRepository.list({
+      const workouts: ListedWorkouts[] = await WorkoutsRepository.list({
         id: filters.id,
         name: filters.name,
-        student_id: filters.student_id,
-        trainer_id: filters.trainer_id,
+        students: filters.students,
+        trainers: filters.trainers,
+        scheduledAt: filters.scheduledAt,
+        exercises: filters.exercises,
         startsAt,
         endsAt
       });

@@ -29,14 +29,16 @@ export type TCreateWorkoutArgs = {
   video_name: string;
 };
 
-export type TWorkoutFilters = {
-  name: string | undefined;
-  student_id: string | undefined;
-  trainer_id: string | undefined;
-  id: number | undefined;
-  startsAt: DateUtils | undefined;
-  endsAt: DateUtils | undefined;
-};
+export type TWorkoutFilters = Partial<{
+  name: string;
+  students: string[];
+  trainers: string[];
+  id: number;
+  startsAt: DateUtils;
+  endsAt: DateUtils;
+  scheduledAt: number[];
+  exercises: number[];
+}>;
 
 export type TWorkoutXStudentsArgs = {
   student_id: string;
@@ -58,6 +60,14 @@ export type TUpdateWorkoutExercisesSchema = {
   workout_id: number;
   add: number[];
   remove: number[];
+};
+
+export type ListedWorkouts = Workouts & {
+  students: Array<{
+    student_id: string;
+    schedules: number[];
+  }>;
+  exercises: number[];
 };
 
 interface ICreateManyWorkoutWithStudentsInput extends TWorkoutXStudentsArgs {
@@ -103,7 +113,7 @@ export default class WorkoutRepository {
     });
   }
 
-  static async list(filters: TWorkoutFilters): Promise<Workouts[]> {
+  static async list(filters: TWorkoutFilters): Promise<ListedWorkouts[]> {
     {
       return new Promise(async (resolve, reject) => {
         try {
@@ -112,11 +122,12 @@ export default class WorkoutRepository {
           if (filters.id) where.id = filters.id;
           if (filters.name)
             where.name = { contains: filters.name, mode: 'insensitive' };
-          if (filters.student_id)
-            where.Workouts_Students = {
-              some: { student_id: filters.student_id }
+
+          if (filters.trainers && filters.trainers.length)
+            where.trainer_id = {
+              in: filters.trainers
             };
-          if (filters.trainer_id) where.trainer_id = filters.trainer_id;
+
           if (filters.startsAt || filters.endsAt) {
             where.created_at = {};
 
@@ -129,8 +140,51 @@ export default class WorkoutRepository {
             }
           }
 
+          const scheduledAt = filters.scheduledAt
+            ? [...new Set(filters.scheduledAt)]
+            : null;
+
+          if (filters.students || scheduledAt) {
+            where.Workouts_Students = {
+              some: {}
+            };
+
+            if (filters.students?.length) {
+              where.Workouts_Students['some']!.student_id = {
+                in: filters.students
+              };
+              where.Workouts_Students = {
+                some: {
+                  student_id: {
+                    in: filters.students
+                  }
+                }
+              };
+            }
+
+            if (scheduledAt) {
+              where.Workouts_Students['some']!.schedule = {
+                hasSome: scheduledAt
+              };
+            }
+          }
+
+          if (filters.exercises) {
+            where.Workout_Exercices = {
+              some: {
+                exercise_id: {
+                  in: filters.exercises
+                }
+              }
+            };
+          }
+
           const workouts = await prisma.workouts.findMany({
             where,
+            include: {
+              Workouts_Students: true,
+              Workout_Exercices: true
+            },
             orderBy: [
               {
                 created_at: 'desc'
@@ -138,7 +192,26 @@ export default class WorkoutRepository {
             ]
           });
 
-          resolve(workouts);
+          let listedWorkouts: ListedWorkouts[] = workouts.map((workout) => {
+            return {
+              id: workout.id,
+              name: workout.name,
+              trainer_id: workout.trainer_id,
+              description: workout.description,
+              created_at: workout.created_at,
+              updated_at: workout.updated_at,
+              logo_url: workout.logo_url,
+              students: workout.Workouts_Students.map((wxs) => {
+                return {
+                  student_id: wxs.student_id,
+                  schedules: wxs.schedule
+                };
+              }),
+              exercises: workout.Workout_Exercices.map((wxs) => wxs.exercise_id)
+            };
+          });
+
+          resolve(listedWorkouts);
         } catch (error) {
           return reject(new InternalServerError());
         }

@@ -8,7 +8,7 @@ const trainerId = z
     invalid_type_error: 'TrainerId must be a string'
   })
   .trim()
-  .uuid({ message: 'TrainerId msut be an uuid' });
+  .uuid({ message: 'TrainerId must be an uuid' });
 
 const trainerUniqueKeys = userUniqueKeysPartial.or(
   z.object({
